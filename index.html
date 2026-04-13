@@ -872,10 +872,15 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
     if (col.width) newSheet.getColumn(i + 1).width = col.width;
   });
 
+  // 全列幅を3に設定（Book1準拠）
+  for (let c = 1; c <= 55; c++) {
+    newSheet.getColumn(c).width = 3;
+  }
+
   // 行をコピー（値・スタイル・マージ全て）
   srcSheet.eachRow({ includeEmpty: true }, (row, rowNum) => {
     const newRow = newSheet.getRow(rowNum);
-    newRow.height = row.height;
+    newRow.height = 18.8; // 全行の高さを18.8に統一
     row.eachCell({ includeEmpty: true }, (cell, colNum) => {
       const newCell = newRow.getCell(colNum);
       // スタイルをディープコピー
