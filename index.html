@@ -719,8 +719,6 @@ window.confirmDelete=confirmDelete; window.closeConfirm=closeConfirm; window.exe
 window.onExportDateChange=onExportDateChange; window.doExport=doExport;
 </script>
 
-<!-- SheetJS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ===== エクスポート =====
 
@@ -799,125 +797,120 @@ async function doExport() {
 
   try {
     const dateVal = document.getElementById('export-date').value;
-    const dateStr = dateVal.replace(/-/g, '/');
     const sheetName = dateVal.replace(/-/g, '');
     const fileName = `緊急報告_${sheetName}.xlsx`;
 
-    const wb = buildWorkbook(exportRecords, dateStr, sheetName);
-    XLSX.writeFile(wb, fileName);
+    const b64 = await generateExcelViaAPI(exportRecords, dateVal, sheetName);
+
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     showToast('Excelをダウンロードしました');
   } catch(e) {
     console.error(e);
-    showToast('生成に失敗しました: ' + e.message, 'error');
+    showToast('生成に失敗しました: ' + (e.message||''), 'error');
   }
-
   btn.innerHTML = 'Excelをダウンロード';
   btn.disabled = false;
 }
 
-function buildWorkbook(records, dateStr, sheetName) {
-  // Book1.xlsxの実測値に完全準拠
-  // 1ブロック = 17行（行2〜18 / 19〜35 / 36〜52）→ 0-indexedで 0〜16 / 17〜33 / 34〜50
-  // 左ブロック: 列B〜AB（col index 1〜27）
-  // 右ブロック: 列AD〜BC（col index 29〜54）
-  // 列A・ACは空白区切り
+async function generateExcelViaAPI(records, dateVal, sheetName) {
+  const lightRecords = records.map(r => ({
+    kanri: r.kanri||'', tanto: r.tanto||'', damage: r.damage||'',
+    kumen: r.kumen||'', shubetsu: r.shubetsu||'', zumen: r.zumen||''
+  }));
 
-  const BLOCK_H = 17;
-  const BLOCK_STARTS = [0, 17, 34]; // 0-indexed row
-  const TOTAL_ROWS = 51;
-  const TOTAL_COLS = 55;
+  const templateB64 = await getTemplateB64();
 
-  const aoa = Array.from({length: TOTAL_ROWS}, () => Array(TOTAL_COLS).fill(null));
-  const merges = [];
+  const pythonCode = [
+    'import base64, io, datetime, zipfile, re',
+    'from openpyxl import load_workbook',
+    '',
+    'def remove_phonetics(xlsx_bytes):',
+    '    buf_in = io.BytesIO(xlsx_bytes)',
+    '    buf_out = io.BytesIO()',
+    '    with zipfile.ZipFile(buf_in, "r") as zin, zipfile.ZipFile(buf_out, "w", zipfile.ZIP_DEFLATED) as zout:',
+    '        for item in zin.infolist():',
+    '            data = zin.read(item.filename)',
+    '            if item.filename == "xl/sharedStrings.xml":',
+    '                xml = data.decode("utf-8")',
+    '                xml = re.sub(r"<rPh[^>]*>.*?</rPh>", "", xml, flags=re.DOTALL)',
+    '                xml = re.sub(r"<phoneticPr[^>]*/>", "", xml)',
+    '                data = xml.encode("utf-8")',
+    '            elif "worksheets" in item.filename:',
+    '                xml = data.decode("utf-8")',
+    '                xml = re.sub(r"<phoneticPr[^>]*/>", "", xml)',
+    '                data = xml.encode("utf-8")',
+    '            zout.writestr(item, data)',
+    '    buf_out.seek(0)',
+    '    return buf_out.read()',
+    '',
+    f'TEMPLATE_B64 = "{templateB64}"',
+    'tmpl_bytes = remove_phonetics(base64.b64decode(TEMPLATE_B64))',
+    'wb = load_workbook(io.BytesIO(tmpl_bytes))',
+    f'date_val = datetime.date.fromisoformat("{dateVal}")',
+    f'sheet_name = "{sheetName}"',
+    "ws = wb.copy_worksheet(wb['元'])",
+    'ws.title = sheet_name',
+    'ws._images = []',
+    f'records = {JSON.stringify(lightRecords)}',
+    'def write_block(ws, start_row, side, rec, date_val):',
+    '    if side == "left":',
+    '        col_date=4; col_tanto=11; col_kumen=5; col_shubetsu=11; col_kanri=16; col_zumen=24; col_damage=23',
+    '    else:',
+    '        col_date=32; col_tanto=39; col_kumen=33; col_shubetsu=39; col_kanri=44; col_zumen=52; col_damage=51',
+    '    ws.cell(row=start_row,    column=col_date).value = date_val',
+    '    ws.cell(row=start_row,    column=col_date).number_format = "yyyy/m/d"',
+    '    ws.cell(row=start_row,    column=col_tanto).value = rec["tanto"]',
+    '    ws.cell(row=start_row+1,  column=col_kumen).value = rec["kumen"]',
+    '    ws.cell(row=start_row+1,  column=col_shubetsu).value = rec["shubetsu"]',
+    '    ws.cell(row=start_row+1,  column=col_kanri).value = rec["kanri"]',
+    '    ws.cell(row=start_row+1,  column=col_zumen).value = rec["zumen"]',
+    '    ws.cell(row=start_row+14, column=col_damage).value = rec["damage"]',
+    'BLOCK_ROWS = [2, 19, 36]',
+    'for i, rec in enumerate(records[:6]):',
+    '    write_block(ws, BLOCK_ROWS[i//2], "left" if i%2==0 else "right", rec, date_val)',
+    'buf = io.BytesIO()',
+    'wb.save(buf)',
+    'buf.seek(0)',
+    'print(base64.b64encode(buf.read()).decode())'
+  ].join('\\n');
 
-  function m(r, c, rs, cs) {
-    merges.push({ s: {r, c}, e: {r: r+rs-1, c: c+cs-1} });
-  }
-
-  // ブロック1件分のテンプレート（rowOff=0-indexed開始行、colOff=0=左/28=右）
-  function setTemplate(rowOff, colOff) {
-    const r0 = rowOff, c = colOff;
-    // --- 行1: 日付・点検者 ---
-    aoa[r0][c+1] = '日付';       m(r0, c+1, 1, 2);   // B:C
-    // D:F → 入力値
-                                  m(r0, c+3, 1, 3);   // D:F
-    aoa[r0][c+6] = '点検者：';   m(r0, c+6, 1, 4);   // G:J
-
-    // --- 行2: 対象区・種別・管理番号・図面番号 ---
-    aoa[r0+1][c+1] = '対象区';   m(r0+1, c+1, 1, 3); // B:D
-    // E:G → 入力値
-                                  m(r0+1, c+4, 1, 3); // E:G
-    aoa[r0+1][c+8] = '種別';     m(r0+1, c+8, 1, 2); // I:J
-    // K:L → 入力値（単セル）
-    aoa[r0+1][c+12] = '管理番号'; m(r0+1, c+12, 1, 3); // M:O
-    // P:S → 入力値
-                                  m(r0+1, c+15, 1, 4); // P:S
-    aoa[r0+1][c+20] = '図面番号'; m(r0+1, c+20, 1, 3); // U:W
-    // X:AA → 入力値
-                                  m(r0+1, c+23, 1, 4); // X:AA
-
-    // --- 行3〜14: 写真エリア（3列） ---
-    m(r0+2, c+1,  12, 8); // B:I  管理番号札写真
-    m(r0+2, c+10, 12, 8); // K:R  全景写真
-    m(r0+2, c+19, 12, 8); // T:AA 損傷箇所写真
-
-    // --- 行15: ラベル行 ---
-    aoa[r0+14][c+1]  = '管理番号'; m(r0+14, c+1,  1, 8); // B:I
-    aoa[r0+14][c+10] = '全景写真'; m(r0+14, c+10, 1, 8); // K:R
-    aoa[r0+14][c+19] = '損傷種類：'; m(r0+14, c+19, 1, 3); // T:V
-    // W:AA → 入力値
-                                    m(r0+14, c+22, 1, 5); // W:AA
-  }
-
-  function fillData(rowOff, colOff, rec) {
-    const r0 = rowOff, c = colOff;
-    aoa[r0][c+3]    = dateStr;          // D: 日付値
-    aoa[r0][c+6]    = '点検者：';       // G: ラベル（マージG:J）
-    aoa[r0][c+10]   = rec.tanto || '';  // K: 担当者名（ラベル右隣）
-    aoa[r0+1][c+4]  = rec.kumen    || ''; // E: 対象区
-    aoa[r0+1][c+10] = rec.shubetsu || ''; // K: 種別
-    aoa[r0+1][c+15] = rec.kanri    || ''; // P: 管理番号
-    aoa[r0+1][c+23] = rec.zumen    || ''; // X: 図面番号
-    aoa[r0+14][c+22]= rec.damage   || ''; // W: 損傷種類
-  }
-
-  // 全ブロックにテンプレートを設定
-  BLOCK_STARTS.forEach(rowOff => {
-    setTemplate(rowOff, 0);  // 左
-    setTemplate(rowOff, 28); // 右
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8000,
+      system: 'You are a Python code executor. Execute the given Python code and return ONLY the raw printed output. No explanation, no markdown, no code blocks. Just the base64 string.',
+      messages: [{ role: 'user', content: 'Execute:\\n' + pythonCode }]
+    })
   });
 
-  // データを書き込み（左右交互に配置）
-  for (let i = 0; i < Math.min(records.length, 6); i++) {
-    const blockIdx = Math.floor(i / 2);
-    const side = i % 2 === 0 ? 0 : 28; // 0=左, 28=右
-    fillData(BLOCK_STARTS[blockIdx], side, records[i]);
-  }
+  if (!res.ok) throw new Error('API error: ' + res.status);
+  const data = await res.json();
+  const text = data.content?.find(b => b.type === 'text')?.text || '';
+  return text.trim().replace(/\s/g, '');
+}
 
-  // ワークシート生成
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!merges'] = merges;
-
-  // 列幅（Book1に準拠: 全列デフォルト幅、主要列のみ調整）
-  ws['!cols'] = Array(TOTAL_COLS).fill(null).map(() => ({ wch: 3 }));
-  // 主要列を広く（B,E,G,K,P,U,X + 右側対応）
-  const wideCols = [
-    1,4,6,10,15,20,23,  // 左: B,E,G,K,P,U,X
-    29,32,34,38,43,48,51 // 右: AD,AG,AI,AM,AR,AW,AZ
-  ];
-  wideCols.forEach(c => { ws['!cols'][c] = { wch: 12 }; });
-
-  // 行の高さ（Book1実測: ヘッダー行=19.5pt、写真行=高め）
-  ws['!rows'] = Array(TOTAL_ROWS).fill(null).map((_, r) => {
-    const rel = r % BLOCK_H;
-    if (rel === 0 || rel === 1 || rel === 14) return { hpt: 19.5 };
-    if (rel >= 2 && rel <= 13) return { hpt: 50 };
-    return { hpt: 19.5 };
-  });
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  return wb;
+let _templateB64 = null;
+async function getTemplateB64() {
+  if (_templateB64) return _templateB64;
+  const res = await fetch('Book1.xlsx');
+  if (!res.ok) throw new Error('Book1.xlsx が見つかりません。GitHubにアップされているか確認してください。');
+  const buf = await res.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  _templateB64 = btoa(binary);
+  return _templateB64;
 }
 
 </script>
