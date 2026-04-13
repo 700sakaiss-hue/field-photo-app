@@ -10,136 +10,129 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1523;
-    --surface: #1a2235;
-    --surface2: #222d42;
-    --border: #2e3d5a;
-    --accent: #3b82f6;
-    --accent2: #60a5fa;
-    --green: #22c55e;
-    --red: #ef4444;
-    --amber: #f59e0b;
-    --text: #e2e8f0;
-    --text2: #94a3b8;
-    --text3: #64748b;
-    --mono: 'JetBrains Mono', monospace;
+    --bg:#0f1523;--surface:#1a2235;--surface2:#222d42;--border:#2e3d5a;
+    --accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--red:#ef4444;
+    --amber:#f59e0b;--text:#e2e8f0;--text3:#64748b;--mono:'JetBrains Mono',monospace;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; overflow-x: hidden; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;}
 
   /* ログイン */
-  #login-screen { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-  .login-logo { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--text3); margin-bottom: 2rem; }
-  .login-title { font-size: 22px; font-weight: 700; margin-bottom: 0.5rem; text-align: center; }
-  .login-sub { font-size: 13px; color: var(--text3); margin-bottom: 2.5rem; text-align: center; }
-  .login-card { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; }
-  .field { margin-bottom: 1.2rem; }
-  .field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
-  .field input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; font-family: 'Noto Sans JP', sans-serif; outline: none; transition: border-color 0.2s; }
-  .field input:focus { border-color: var(--accent); }
-  .btn-primary { width: 100%; padding: 13px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; }
-  .error-msg { font-size: 12px; color: var(--red); margin-top: 10px; text-align: center; min-height: 18px; }
+  #login-screen{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
+  .login-logo{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--text3);margin-bottom:2rem;}
+  .login-title{font-size:22px;font-weight:700;margin-bottom:.5rem;text-align:center;}
+  .login-sub{font-size:13px;color:var(--text3);margin-bottom:2.5rem;text-align:center;}
+  .login-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;}
+  .field{margin-bottom:1.2rem;}
+  .field label{display:block;font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;}
+  .field input{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;font-family:'Noto Sans JP',sans-serif;outline:none;transition:border-color .2s;}
+  .field input:focus{border-color:var(--accent);}
+  .btn-primary{width:100%;padding:13px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:15px;font-weight:700;font-family:'Noto Sans JP',sans-serif;cursor:pointer;}
+  .error-msg{font-size:12px;color:var(--red);margin-top:10px;text-align:center;min-height:18px;}
 
   /* アプリ */
-  #main-app { display: none; min-height: 100dvh; flex-direction: column; }
-  .app-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px 0; position: sticky; top: 0; z-index: 100; }
-  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .header-title { font-size: 16px; font-weight: 700; }
-  .header-sub { font-size: 10px; letter-spacing: 0.12em; color: var(--text3); font-family: var(--mono); }
-  .logout-btn { font-size: 11px; color: var(--text3); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
-  .tabs { display: flex; }
-  .tab { flex: 1; padding: 10px 0; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text3); font-size: 13px; font-weight: 500; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
-  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
-  .tab-content { display: none; flex: 1; padding: 16px; }
-  .tab-content.active { display: block; }
+  #main-app{display:none;min-height:100dvh;flex-direction:column;}
+  .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px 0;position:sticky;top:0;z-index:100;}
+  .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .header-title{font-size:16px;font-weight:700;}
+  .header-sub{font-size:10px;letter-spacing:.12em;color:var(--text3);font-family:var(--mono);}
+  .logout-btn{font-size:11px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;}
+  .tabs{display:flex;}
+  .tab{flex:1;padding:10px 0;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);font-size:13px;font-weight:500;font-family:'Noto Sans JP',sans-serif;cursor:pointer;transition:color .15s,border-color .15s;}
+  .tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+  .tab-content{display:none;flex:1;padding:16px;}
+  .tab-content.active{display:block;}
 
-  /* フォーム */
-  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-  .section-label { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase; font-family: var(--mono); margin-bottom: 10px; }
-  .kanri-wrap { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
-  .kanri-input { flex: 1; padding: 11px 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; font-family: var(--mono); letter-spacing: 0.05em; outline: none; transition: border-color 0.2s; }
-  .kanri-input:focus { border-color: var(--accent); }
-  .kanri-input.ok { border-color: var(--green); }
-  .kanri-input.warn { border-color: var(--amber); }
-  .check-badge { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; transition: all 0.2s; }
-  .check-badge.ok { background: #14532d; color: var(--green); }
-  .check-badge.warn { background: #451a03; color: var(--amber); }
-  .check-badge.idle { background: var(--surface2); color: var(--text3); }
-  .kanri-status { font-size: 11px; min-height: 16px; font-family: var(--mono); }
-  .kanri-status.ok { color: var(--green); }
-  .kanri-status.warn { color: var(--amber); }
-  .auto-info { margin-top: 10px; padding: 10px 12px; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--accent); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .auto-info.hidden { display: none; }
-  .info-item label { font-size: 9px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; font-family: var(--mono); display: block; margin-bottom: 2px; }
-  .info-item span { font-size: 12px; font-weight: 500; color: var(--accent2); }
-  .form-input { width: 100%; padding: 11px 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; font-family: 'Noto Sans JP', sans-serif; outline: none; transition: border-color 0.2s; }
-  .form-input:focus { border-color: var(--accent); }
-  select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-  .damage-wrap { display: flex; flex-direction: column; gap: 8px; }
+  /* フォーム共通 */
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
+  .section-label{font-size:10px;font-weight:500;letter-spacing:.12em;color:var(--text3);text-transform:uppercase;font-family:var(--mono);margin-bottom:10px;}
+  .kanri-wrap{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
+  .kanri-input{flex:1;padding:11px 13px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;font-family:var(--mono);letter-spacing:.05em;outline:none;transition:border-color .2s;}
+  .kanri-input:focus{border-color:var(--accent);}
+  .kanri-input.ok{border-color:var(--green);}
+  .kanri-input.warn{border-color:var(--amber);}
+  .check-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s;}
+  .check-badge.ok{background:#14532d;color:var(--green);}
+  .check-badge.warn{background:#451a03;color:var(--amber);}
+  .check-badge.idle{background:var(--surface2);color:var(--text3);}
+  .kanri-status{font-size:11px;min-height:16px;font-family:var(--mono);}
+  .kanri-status.ok{color:var(--green);}
+  .kanri-status.warn{color:var(--amber);}
+  .auto-info{margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--accent);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .auto-info.hidden{display:none;}
+  .info-item label{font-size:9px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;font-family:var(--mono);display:block;margin-bottom:2px;}
+  .info-item span{font-size:12px;font-weight:500;color:var(--accent2);}
+  .form-input{width:100%;padding:11px 13px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;transition:border-color .2s;}
+  .form-input:focus{border-color:var(--accent);}
+  select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+  .damage-wrap{display:flex;flex-direction:column;gap:8px;}
 
-  /* 固定写真スロット */
-  .fixed-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-  .fixed-photo-slot { aspect-ratio: 1; border-radius: 10px; overflow: hidden; position: relative; cursor: pointer; border: 1.5px dashed var(--border); background: var(--bg); transition: border-color 0.15s; }
-  .fixed-photo-slot:active { border-color: var(--accent); }
-  .fixed-photo-slot.filled { border-style: solid; border-color: var(--border); }
-  .slot-empty { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--text3); font-size: 11px; }
-  .slot-filled { width: 100%; height: 100%; position: relative; }
-  .slot-filled img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .slot-filled .slot-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.65); font-size: 9px; color: #fff; text-align: center; padding: 3px 0; }
-  .slot-filled .slot-del { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; color: #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-  /* 補足写真 */
-  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-  .photo-thumb { aspect-ratio: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; }
-  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .photo-thumb .del-btn { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; color: #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .photo-thumb .photo-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.65); font-size: 9px; color: #fff; text-align: center; padding: 2px 0; }
-  .add-photo-btn { width: 100%; padding: 11px; background: var(--bg); border: 1px dashed var(--border); border-radius: 8px; color: var(--text3); font-size: 13px; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  /* 写真スロット */
+  .fixed-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .fixed-photo-slot{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;border:1.5px dashed var(--border);background:var(--bg);transition:border-color .15s;}
+  .fixed-photo-slot:active{border-color:var(--accent);}
+  .fixed-photo-slot.filled{border-style:solid;border-color:var(--green);}
+  .slot-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text3);font-size:11px;}
+  .slot-filled{width:100%;height:100%;position:relative;}
+  .slot-filled img{width:100%;height:100%;object-fit:cover;display:block;}
+  .slot-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);font-size:9px;color:#fff;text-align:center;padding:3px 0;}
+  .slot-del{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .slot-required-hint{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;font-family:var(--mono);}
 
   /* 送信 */
-  .submit-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; margin-top: 4px; }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .submit-btn{width:100%;padding:15px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:700;font-family:'Noto Sans JP',sans-serif;cursor:pointer;margin-top:4px;transition:opacity .15s;}
+  .submit-btn:disabled{opacity:.35;cursor:not-allowed;}
 
   /* 履歴 */
-  .search-bar { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; margin-bottom: 10px; }
-  .search-bar input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 14px; font-family: 'Noto Sans JP', sans-serif; }
-  .search-bar input::placeholder { color: var(--text3); }
-  .filter-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
-  .filter-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; color: var(--text3); font-size: 11px; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; }
-  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-  .card-kanri { font-family: var(--mono); font-size: 14px; font-weight: 600; }
-  .card-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .card-date { font-size: 11px; color: var(--text3); text-align: right; }
-  .card-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #14532d; color: var(--green); margin-top: 3px; display: inline-block; }
-  .card-photos { display: flex; gap: 5px; }
-  .card-photo { width: 52px; height: 40px; border-radius: 6px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); flex-shrink: 0; }
-  .card-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .card-photo-more { width: 52px; height: 40px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text3); flex-shrink: 0; font-family: var(--mono); }
-  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 13px; }
+  .search-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:10px;}
+  .search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;font-family:'Noto Sans JP',sans-serif;}
+  .search-bar input::placeholder{color:var(--text3);}
+  .filter-row{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
+  .filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text3);font-size:11px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+  .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .report-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+  .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .card-kanri{font-family:var(--mono);font-size:14px;font-weight:600;}
+  .card-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+  .card-date{font-size:11px;color:var(--text3);text-align:right;}
+  .card-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:#14532d;color:var(--green);margin-top:3px;display:inline-block;}
+  .card-photos{display:flex;gap:5px;}
+  .card-photo{width:52px;height:40px;border-radius:6px;overflow:hidden;background:var(--bg);border:1px solid var(--border);flex-shrink:0;}
+  .card-photo img{width:100%;height:100%;object-fit:cover;}
+  .card-photo-more{width:52px;height:40px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);flex-shrink:0;font-family:var(--mono);}
+  .empty-state{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:13px;}
 
   /* モーダル */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; padding: 1rem; overflow-y: auto; }
-  .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 420px; padding: 20px; margin: auto; }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .modal-title { font-family: var(--mono); font-size: 16px; font-weight: 600; }
-  .modal-close { width: 30px; height: 30px; background: var(--surface2); border: none; border-radius: 50%; color: var(--text3); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .detail-row .key { color: var(--text3); }
-  .detail-row .val { color: var(--text); font-weight: 500; text-align: right; }
-  .modal-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; }
-  .modal-photo { border-radius: 8px; overflow: hidden; aspect-ratio: 4/3; background: var(--bg); }
-  .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;padding:1rem;overflow-y:auto;}
+  .modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;padding:20px;margin:auto;}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .modal-title{font-family:var(--mono);font-size:16px;font-weight:600;}
+  .modal-close{width:30px;height:30px;background:var(--surface2);border:none;border-radius:50%;color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .delete-btn{width:100%;margin-top:16px;padding:11px;background:none;border:1px solid var(--red);border-radius:8px;color:var(--red);font-size:13px;font-weight:500;font-family:'Noto Sans JP',sans-serif;cursor:pointer;transition:background .15s;}
+  .delete-btn:active{background:rgba(239,68,68,.1);}
+  .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;padding:1rem;}
+  .confirm-overlay.open{display:flex;}
+  .confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:320px;text-align:center;}
+  .confirm-title{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .confirm-sub{font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.6;}
+  .confirm-btns{display:flex;gap:10px;}
+  .confirm-cancel{flex:1;padding:11px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:14px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;}
+  .confirm-ok{flex:1;padding:11px;background:var(--red);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans JP',sans-serif;cursor:pointer;}
+  .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .detail-row .key{color:var(--text3);}
+  .detail-row .val{color:var(--text);font-weight:500;text-align:right;}
+  .modal-photos{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;}
+  .modal-photo{border-radius:8px;overflow:hidden;aspect-ratio:4/3;background:var(--bg);}
+  .modal-photo img{width:100%;height:100%;object-fit:cover;display:block;}
 
   /* トースト */
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; font-size: 13px; color: var(--text); z-index: 300; transition: transform 0.25s ease; white-space: nowrap; }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: var(--green); color: var(--green); }
-  .toast.error { border-color: var(--red); color: var(--red); }
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:300;transition:transform .25s ease;white-space:nowrap;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.success{border-color:var(--green);color:var(--green);}
+  .toast.error{border-color:var(--red);color:var(--red);}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -149,14 +142,8 @@
   <div class="login-title">現場撮影アプリ</div>
   <div class="login-sub">FIELD INSPECTION SYSTEM</div>
   <div class="login-card">
-    <div class="field">
-      <label>メールアドレス</label>
-      <input type="email" id="login-email" placeholder="example@email.com" autocomplete="email">
-    </div>
-    <div class="field">
-      <label>パスワード</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
-    </div>
+    <div class="field"><label>メールアドレス</label><input type="email" id="login-email" placeholder="example@email.com" autocomplete="email"></div>
+    <div class="field"><label>パスワード</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-primary" id="login-btn" onclick="doLogin()">ログイン</button>
     <div class="error-msg" id="login-error"></div>
   </div>
@@ -165,10 +152,7 @@
 <div id="main-app">
   <div class="app-header">
     <div class="header-top">
-      <div>
-        <div class="header-sub">堺総合サービス</div>
-        <div class="header-title">現場撮影アプリ</div>
-      </div>
+      <div><div class="header-sub">堺総合サービス</div><div class="header-title">現場撮影アプリ</div></div>
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
     </div>
     <div class="tabs">
@@ -182,10 +166,7 @@
     <div class="section">
       <div class="section-label">管理番号</div>
       <div class="kanri-wrap">
-        <input type="text" class="kanri-input" id="kanri-input"
-          placeholder="例：00A000000"
-          oninput="onKanriInput()"
-          autocomplete="off" autocorrect="off" spellcheck="false">
+        <input type="text" class="kanri-input" id="kanri-input" placeholder="例：00A000000" oninput="onKanriInput()" autocomplete="off" autocorrect="off" spellcheck="false">
         <div class="check-badge idle" id="check-badge">—</div>
       </div>
       <div class="kanri-status" id="kanri-status"></div>
@@ -216,7 +197,7 @@
     </div>
 
     <div class="section">
-      <div class="section-label">撮影写真 <span id="photo-count" style="color:var(--text3);font-weight:400;">（0枚）</span></div>
+      <div class="section-label">撮影写真（3枚必須）</div>
       <div class="fixed-photo-grid">
         <div class="fixed-photo-slot" id="slot-0" onclick="pickPhoto(0)">
           <div class="slot-empty">
@@ -237,16 +218,11 @@
           </div>
         </div>
       </div>
-      <div class="photo-grid" id="photo-grid"></div>
-      <button class="add-photo-btn" onclick="document.getElementById('file-input-extra').click()">
-        <svg width="16" height="13" viewBox="0 0 16 13" fill="none"><rect x="0.5" y="2" width="15" height="10.5" rx="2" stroke="currentColor" stroke-width="1.1"/><circle cx="8" cy="7.5" r="2.8" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 2l1-2h3l1 2" stroke="currentColor" stroke-width="1.1" fill="none"/></svg>
-        補足写真を追加する
-      </button>
+      <div class="slot-required-hint" id="slot-hint">3枚すべて選択すると登録できます</div>
       <input type="file" id="file-input-slot" accept="image/*" style="display:none" onchange="onSlotFilePick(event)">
-      <input type="file" id="file-input-extra" accept="image/*" multiple style="display:none" onchange="onExtraFilePick(event)">
     </div>
 
-    <button class="submit-btn" id="submit-btn" onclick="doSubmit()">登録して写真を保存</button>
+    <button class="submit-btn" id="submit-btn" onclick="doSubmit()" disabled>緊急報告を登録</button>
     <div style="height:24px;"></div>
   </div>
 
@@ -274,16 +250,28 @@
     </div>
     <div id="modal-details"></div>
     <div class="modal-photos" id="modal-photos"></div>
+    <button class="delete-btn" id="modal-delete-btn" onclick="confirmDelete()">この報告を削除する</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title">この報告を削除しますか？</div>
+    <div class="confirm-sub" id="confirm-sub">削除すると元に戻せません。</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">キャンセル</button>
+      <button class="confirm-ok" onclick="execDelete()">削除する</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getDatabase, ref, push, get }
+import { getDatabase, ref, push, get, remove }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
 const firebaseConfig = {
@@ -305,6 +293,7 @@ window._db = db;
 window._dbRef = ref;
 window._push = push;
 window._get = get;
+window._remove = remove;
 window._signIn = signInWithEmailAndPassword;
 window._signOut = signOut;
 
@@ -324,12 +313,28 @@ onAuthStateChanged(auth, user => {
 let masterData = {};
 fetch('masterdata.json').then(r => r.json()).then(d => { masterData = d; });
 
-// 固定スロット3枚 + 補足写真
-let slotPhotos = [null, null, null]; // 管理番号札・全景・損傷箇所
-let extraPhotos = [];
+const SLOT_NAMES = ['管理番号札', '全景', '損傷箇所'];
+let slotPhotos = [null, null, null];
 let currentSlot = -1;
 let historyData = [];
 let currentFilter = 'all';
+
+// ===== 画像圧縮（最大800px・品質0.7） =====
+function compressImage(dataUrl, maxSize=800, quality=0.7) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+      else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
 
 // ===== ログイン =====
 async function doLogin() {
@@ -339,14 +344,12 @@ async function doLogin() {
   const err = document.getElementById('login-error');
   if (!email || !pass) { err.textContent = 'メールアドレスとパスワードを入力してください'; return; }
   btn.innerHTML = '<span class="spinner"></span>ログイン中...';
-  btn.disabled = true;
-  err.textContent = '';
+  btn.disabled = true; err.textContent = '';
   try {
     await window._signIn(window._auth, email, pass);
   } catch(e) {
     err.textContent = 'メールアドレスまたはパスワードが違います';
-    btn.innerHTML = 'ログイン';
-    btn.disabled = false;
+    btn.innerHTML = 'ログイン'; btn.disabled = false;
   }
 }
 document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -412,8 +415,7 @@ function onDamageSelect() {
   document.getElementById('damage-free').style.display = sel === 'その他' ? 'block' : 'none';
 }
 
-// ===== 固定スロット写真 =====
-const slotNames = ['管理番号札', '全景', '損傷箇所'];
+// ===== 写真スロット =====
 function pickPhoto(slotIndex) {
   currentSlot = slotIndex;
   document.getElementById('file-input-slot').click();
@@ -422,24 +424,25 @@ function pickPhoto(slotIndex) {
 async function onSlotFilePick(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const dataUrl = await readFile(file);
-  slotPhotos[currentSlot] = { dataUrl, name: file.name };
+  const raw = await readFile(file);
+  const compressed = await compressImage(raw);
+  slotPhotos[currentSlot] = { dataUrl: compressed, name: file.name };
   e.target.value = '';
   renderSlots();
-  updatePhotoCount();
+  updateSubmitBtn();
 }
 
 function renderSlots() {
-  slotNames.forEach((name, i) => {
+  SLOT_NAMES.forEach((name, i) => {
     const slot = document.getElementById('slot-' + i);
     if (slotPhotos[i]) {
       slot.className = 'fixed-photo-slot filled';
-      slot.innerHTML = `
-        <div class="slot-filled">
-          <img src="${slotPhotos[i].dataUrl}" alt="${name}">
-          <div class="slot-label">${name}</div>
-          <button class="slot-del" onclick="clearSlot(event,${i})">✕</button>
-        </div>`;
+      slot.innerHTML = `<div class="slot-filled">
+        <img src="${slotPhotos[i].dataUrl}" alt="${name}">
+        <div class="slot-label">${name}</div>
+        <button class="slot-del" onclick="clearSlot(event,${i})">✕</button>
+      </div>`;
+      slot.onclick = () => pickPhoto(i);
     } else {
       slot.className = 'fixed-photo-slot';
       slot.innerHTML = `<div class="slot-empty">
@@ -454,39 +457,17 @@ function clearSlot(e, i) {
   e.stopPropagation();
   slotPhotos[i] = null;
   renderSlots();
-  updatePhotoCount();
+  updateSubmitBtn();
 }
 
-// ===== 補足写真 =====
-async function onExtraFilePick(e) {
-  const files = Array.from(e.target.files);
-  for (const file of files) {
-    const dataUrl = await readFile(file);
-    extraPhotos.push({ dataUrl, name: file.name });
-  }
-  e.target.value = '';
-  renderExtraPhotos();
-  updatePhotoCount();
-}
-
-function renderExtraPhotos() {
-  const grid = document.getElementById('photo-grid');
-  grid.innerHTML = '';
-  extraPhotos.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'photo-thumb';
-    div.innerHTML = `<img src="${p.dataUrl}" alt="補足${i+1}">
-      <button class="del-btn" onclick="delExtra(${i})">✕</button>
-      <div class="photo-label">補足${i+1}</div>`;
-    grid.appendChild(div);
-  });
-}
-
-function delExtra(i) { extraPhotos.splice(i, 1); renderExtraPhotos(); updatePhotoCount(); }
-
-function updatePhotoCount() {
-  const total = slotPhotos.filter(p => p).length + extraPhotos.length;
-  document.getElementById('photo-count').textContent = `（${total}枚）`;
+function updateSubmitBtn() {
+  const allFilled = slotPhotos.every(p => p !== null);
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = !allFilled;
+  const hint = document.getElementById('slot-hint');
+  const filled = slotPhotos.filter(p => p).length;
+  hint.textContent = allFilled ? '3枚揃いました！' : `${filled}/3枚 — 3枚すべて選択すると登録できます`;
+  hint.style.color = allFilled ? 'var(--green)' : 'var(--text3)';
 }
 
 function readFile(file) {
@@ -504,47 +485,59 @@ async function doSubmit() {
   if (!kanri) { showToast('管理番号を入力してください', 'error'); return; }
   if (!tanto) { showToast('担当者名を入力してください', 'error'); return; }
   if (!damage) { showToast('損傷種類を選択してください', 'error'); return; }
-  const allPhotos = [...slotPhotos.filter(p => p), ...extraPhotos];
-  if (allPhotos.length === 0) { showToast('写真を1枚以上追加してください', 'error'); return; }
+  if (!slotPhotos.every(p => p)) { showToast('3枚すべての写真を選択してください', 'error'); return; }
 
   const btn = document.getElementById('submit-btn');
-  btn.innerHTML = '<span class="spinner"></span>保存中...';
+  btn.innerHTML = '<span class="spinner"></span>登録中...';
   btn.disabled = true;
 
   const now = new Date();
   const master = masterData[kanri] || [];
-  const record = {
-    kanri, tanto, damage,
-    kumen: master[2] || '',
-    shubetsu: master[1] || '',
-    zumen: master[0] || '',
-    datetime: now.toISOString(),
-    photos: allPhotos.map(p => p.dataUrl)
-  };
 
+  // 写真は別キーで分割保存してFirebaseの4MB制限を回避
+  const photoKeys = [];
   try {
+    for (let i = 0; i < slotPhotos.length; i++) {
+      const photoRef = await window._push(
+        window._dbRef(window._db, 'photos'),
+        { data: slotPhotos[i].dataUrl, label: SLOT_NAMES[i] }
+      );
+      photoKeys.push(photoRef.key);
+    }
+
+    const record = {
+      kanri, tanto, damage,
+      kumen: master[2] || '',
+      shubetsu: master[1] || '',
+      zumen: master[0] || '',
+      datetime: now.toISOString(),
+      photoKeys
+    };
+
     await window._push(window._dbRef(window._db, 'reports'), record);
 
     // 写真をスマホに保存
-    for (let i = 0; i < allPhotos.length; i++) {
+    for (let i = 0; i < slotPhotos.length; i++) {
       const link = document.createElement('a');
-      link.href = allPhotos[i].dataUrl;
-      link.download = `${kanri}_${i+1}.jpg`;
+      link.href = slotPhotos[i].dataUrl;
+      link.download = `${kanri}_${SLOT_NAMES[i]}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      await new Promise(r => setTimeout(r, 350));
+      await new Promise(r => setTimeout(r, 400));
     }
 
-    showToast('登録完了・写真を保存しました', 'success');
+    showToast('緊急報告を登録しました', 'success');
     resetForm();
   } catch(e) {
-    console.error(e);
-    showToast('エラーが発生しました', 'error');
+    console.error('登録エラー:', e);
+    showToast('エラー: ' + (e.message || '登録に失敗しました'), 'error');
+    btn.innerHTML = '緊急報告を登録';
+    btn.disabled = false;
+    return;
   }
-
-  btn.innerHTML = '登録して写真を保存';
-  btn.disabled = false;
+  btn.innerHTML = '緊急報告を登録';
+  updateSubmitBtn();
 }
 
 function resetForm() {
@@ -559,10 +552,8 @@ function resetForm() {
   document.getElementById('kanri-input').className = 'kanri-input';
   document.getElementById('auto-info').classList.add('hidden');
   slotPhotos = [null, null, null];
-  extraPhotos = [];
   renderSlots();
-  renderExtraPhotos();
-  updatePhotoCount();
+  updateSubmitBtn();
 }
 
 // ===== 履歴 =====
@@ -570,10 +561,22 @@ async function loadHistory() {
   const list = document.getElementById('history-list');
   list.innerHTML = '<div class="empty-state">読み込み中...</div>';
   try {
-    const snap = await window._get(window._dbRef(window._db, 'reports'));
+    const [repSnap, photoSnap] = await Promise.all([
+      window._get(window._dbRef(window._db, 'reports')),
+      window._get(window._dbRef(window._db, 'photos'))
+    ]);
+    const photoMap = {};
+    if (photoSnap.exists()) {
+      photoSnap.forEach(item => { photoMap[item.key] = item.val(); });
+    }
     historyData = [];
-    if (snap.exists()) {
-      snap.forEach(item => historyData.push({ id: item.key, ...item.val() }));
+    if (repSnap.exists()) {
+      repSnap.forEach(item => {
+        const r = { id: item.key, ...item.val() };
+        // photoKeysからphoto配列を復元
+        r.photos = (r.photoKeys || []).map(k => photoMap[k] ? photoMap[k].data : null).filter(Boolean);
+        historyData.push(r);
+      });
       historyData.reverse();
     }
     filterHistory();
@@ -625,6 +628,7 @@ function renderHistory(data) {
 function showDetail(id) {
   const r = historyData.find(x => x.id === id);
   if (!r) return;
+  deleteTargetId = id;
   const d = new Date(r.datetime);
   const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   document.getElementById('modal-kanri').textContent = r.kanri || '-';
@@ -643,21 +647,56 @@ function showDetail(id) {
 function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalDirect(); }
 function closeModalDirect() { document.getElementById('modal-overlay').classList.remove('open'); }
 
+let deleteTargetId = null;
+
+function confirmDelete() {
+  const r = historyData.find(x => x.id === deleteTargetId);
+  if (!r) return;
+  document.getElementById('confirm-sub').textContent = `管理番号「${r.kanri}」の報告を削除します。この操作は元に戻せません。`;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+}
+
+async function execDelete() {
+  if (!deleteTargetId) return;
+  const r = historyData.find(x => x.id === deleteTargetId);
+  closeConfirm();
+  closeModalDirect();
+  try {
+    // 写真データも削除
+    if (r && r.photoKeys) {
+      for (const key of r.photoKeys) {
+        await window._remove(window._dbRef(window._db, 'photos/' + key));
+      }
+    }
+    await window._remove(window._dbRef(window._db, 'reports/' + deleteTargetId));
+    showToast('削除しました', 'success');
+    deleteTargetId = null;
+    await loadHistory();
+  } catch(e) {
+    console.error(e);
+    showToast('削除に失敗しました', 'error');
+  }
+}
+
 let toastTimer = null;
 function showToast(msg, type='') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
+  t.textContent = msg; t.className = 'toast show' + (type ? ' ' + type : '');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = 'toast'; }, 2800);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
 }
 
-window.doLogin = doLogin; window.doLogout = doLogout; window.switchTab = switchTab;
-window.onKanriInput = onKanriInput; window.onDamageSelect = onDamageSelect;
-window.pickPhoto = pickPhoto; window.onSlotFilePick = onSlotFilePick;
-window.onExtraFilePick = onExtraFilePick; window.clearSlot = clearSlot; window.delExtra = delExtra;
-window.doSubmit = doSubmit; window.setFilter = setFilter; window.filterHistory = filterHistory;
-window.showDetail = showDetail; window.closeModal = closeModal; window.closeModalDirect = closeModalDirect;
+window.doLogin=doLogin; window.doLogout=doLogout; window.switchTab=switchTab;
+window.onKanriInput=onKanriInput; window.onDamageSelect=onDamageSelect;
+window.pickPhoto=pickPhoto; window.onSlotFilePick=onSlotFilePick;
+window.clearSlot=clearSlot; window.doSubmit=doSubmit;
+window.setFilter=setFilter; window.filterHistory=filterHistory;
+window.showDetail=showDetail; window.closeModal=closeModal; window.closeModalDirect=closeModalDirect;
+window.confirmDelete=confirmDelete; window.closeConfirm=closeConfirm; window.execDelete=execDelete;
 </script>
 </body>
 </html>
