@@ -725,11 +725,14 @@ window.onExportDateChange=onExportDateChange; window.doExport=doExport;
 // 今日の日付をデフォルトセット（タブ表示時）
 function initExportDate() {
   const input = document.getElementById('export-date');
+  // 日本時間で今日の日付をセット
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const today = jst.toISOString().split('T')[0];
   if (!input.value) {
-    const today = new Date();
-    input.value = today.toISOString().split('T')[0];
-    onExportDateChange();
+    input.value = today;
   }
+  onExportDateChange();
 }
 
 let exportRecords = [];
@@ -747,6 +750,12 @@ async function onExportDateChange() {
   exportBtn.disabled = true;
   exportRecords = [];
 
+  // Firebase未初期化チェック
+  if (!window._db || !window._get || !window._dbRef) {
+    showToast('Firebase未接続です。再読み込みしてください', 'error');
+    return;
+  }
+
   try {
     const [repSnap, photoSnap] = await Promise.all([
       window._get(window._dbRef(window._db, 'reports')),
@@ -756,7 +765,7 @@ async function onExportDateChange() {
     const photoMap = {};
     if (photoSnap.exists()) photoSnap.forEach(item => { photoMap[item.key] = item.val(); });
 
-    const targetDate = dateVal; // YYYY-MM-DD
+    const targetDate = dateVal;
     if (repSnap.exists()) {
       repSnap.forEach(item => {
         const r = { id: item.key, ...item.val() };
@@ -774,7 +783,6 @@ async function onExportDateChange() {
       return;
     }
 
-    // プレビュー表示
     document.getElementById('export-count').textContent = `${exportRecords.length}件`;
     document.getElementById('export-list').innerHTML = exportRecords.map(r => `
       <div style="display:flex;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
@@ -785,7 +793,8 @@ async function onExportDateChange() {
     previewSection.style.display = 'block';
     exportBtn.disabled = false;
   } catch(e) {
-    showToast('データ取得に失敗しました', 'error');
+    console.error('エクスポートデータ取得エラー:', e);
+    showToast('データ取得失敗: ' + (e.message||e), 'error');
   }
 }
 
