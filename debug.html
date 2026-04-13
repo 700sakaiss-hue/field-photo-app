@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>エクスポートデバッグ</title>
+<style>
+body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+button { background: #333; color: #fff; border: 1px solid #666; padding: 10px 20px; margin: 5px; cursor: pointer; font-size: 14px; }
+#log { white-space: pre-wrap; margin-top: 20px; font-size: 13px; line-height: 1.6; }
+.ok { color: #0f0; }
+.err { color: #f44; }
+.info { color: #ff0; }
+</style>
+</head>
+<body>
+<h2>🔧 エクスポートデバッグ</h2>
+<button onclick="testFirebase()">① Firebase接続テスト</button>
+<button onclick="testAPI()">② Claude APIテスト</button>
+<button onclick="testBook1()">③ Book1.xlsx取得テスト</button>
+<button onclick="testFull()">④ フルエクスポートテスト</button>
+<div id="log"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCDwmBGAKj0v_qBAQ802uIlsU2Es00VCfk",
+  authDomain: "kinnkyu-houkoku.firebaseapp.com",
+  databaseURL: "https://kinnkyu-houkoku-default-rtdb.firebaseio.com",
+  projectId: "kinnkyu-houkoku",
+  storageBucket: "kinnkyu-houkoku.firebasestorage.app",
+  messagingSenderId: "365786088586",
+  appId: "1:365786088586:web:21a6656f4df025c4ca1973"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._db = db; window._ref = ref; window._get = get;
+log('Firebase SDK 読み込み完了', 'ok');
+</script>
+
+<script>
+function log(msg, cls='info') {
+  const d = document.getElementById('log');
+  const t = new Date().toLocaleTimeString('ja-JP');
+  d.innerHTML += `<span class="${cls}">[${t}] ${msg}</span>\n`;
+}
+
+async function testFirebase() {
+  log('=== Firebase接続テスト ===');
+  try {
+    const snap = await window._get(window._ref(window._db, 'reports'));
+    if (snap.exists()) {
+      let count = 0;
+      snap.forEach(item => {
+        count++;
+        const r = item.val();
+        const d = new Date(r.datetime);
+        const jst = new Date(d.getTime() + 9*60*60*1000);
+        const jstDate = jst.toISOString().split('T')[0];
+        log(`  件数${count}: kanri=${r.kanri}, datetime=${r.datetime}, JST日付=${jstDate}`, 'ok');
+      });
+      log(`合計 ${count} 件取得成功`, 'ok');
+    } else {
+      log('データなし', 'err');
+    }
+  } catch(e) {
+    log('エラー: ' + e.message, 'err');
+  }
+}
+
+async function testAPI() {
+  log('=== Claude APIテスト ===');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 100,
+        system: 'Return only the raw output, no explanation.',
+        messages: [{ role: 'user', content: 'Execute: print("API_OK_TEST_12345")' }]
+      })
+    });
+    log('HTTPステータス: ' + res.status, res.ok ? 'ok' : 'err');
+    const data = await res.json();
+    log('レスポンス: ' + JSON.stringify(data).substring(0, 300), 'info');
+    const text = data.content?.find(b => b.type === 'text')?.text || '';
+    log('テキスト結果: ' + text, text.includes('API_OK') ? 'ok' : 'err');
+  } catch(e) {
+    log('エラー: ' + e.message, 'err');
+  }
+}
+
+async function testBook1() {
+  log('=== Book1.xlsx取得テスト ===');
+  try {
+    const res = await fetch('Book1.xlsx');
+    log('HTTPステータス: ' + res.status, res.ok ? 'ok' : 'err');
+    if (res.ok) {
+      const buf = await res.arrayBuffer();
+      log('ファイルサイズ: ' + buf.byteLength + ' bytes', 'ok');
+    }
+  } catch(e) {
+    log('エラー: ' + e.message, 'err');
+  }
+}
+
+async function testFull() {
+  log('=== フルエクスポートテスト ===');
+  try {
+    // Step1: Firebase
+    log('Step1: Firebaseからデータ取得...');
+    const snap = await window._get(window._ref(window._db, 'reports'));
+    if (!snap.exists()) { log('データなし', 'err'); return; }
+    let records = [];
+    snap.forEach(item => records.push({id: item.key, ...item.val()}));
+    log('取得件数: ' + records.length, 'ok');
+    
+    // Step2: Book1.xlsx
+    log('Step2: Book1.xlsx取得...');
+    const xlsRes = await fetch('Book1.xlsx');
+    log('Book1ステータス: ' + xlsRes.status, xlsRes.ok ? 'ok' : 'err');
+    if (!xlsRes.ok) { log('Book1.xlsxが取得できません！GitHubにアップされているか確認してください', 'err'); return; }
+    const buf = await xlsRes.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    const b64 = btoa(binary);
+    log('Book1 base64サイズ: ' + b64.length + ' chars', 'ok');
+
+    // Step3: API
+    log('Step3: Claude APIに送信...');
+    const r = records[0];
+    const lightRec = [{kanri:r.kanri||'',tanto:r.tanto||'',damage:r.damage||'',kumen:r.kumen||'',shubetsu:r.shubetsu||'',zumen:r.zumen||''}];
+    const pythonCode = [
+      'import base64, io, datetime, zipfile, re',
+      'from openpyxl import load_workbook',
+      'def remove_ph(b):',
+      '    bi=io.BytesIO(b); bo=io.BytesIO()',
+      '    with zipfile.ZipFile(bi,"r") as zi, zipfile.ZipFile(bo,"w",zipfile.ZIP_DEFLATED) as zo:',
+      '        for it in zi.infolist():',
+      '            d=zi.read(it.filename)',
+      '            if "sharedStrings" in it.filename or "worksheets" in it.filename:',
+      '                x=d.decode("utf-8")',
+      '                x=re.sub(r"<rPh[^>]*>.*?</rPh>","",x,flags=re.DOTALL)',
+      '                x=re.sub(r"<phoneticPr[^>]*/>","",x)',
+      '                d=x.encode("utf-8")',
+      '            zo.writestr(it,d)',
+      '    bo.seek(0); return bo.read()',
+      `TB64="${b64}"`,
+      'wb=load_workbook(io.BytesIO(remove_ph(base64.b64decode(TB64))))',
+      'ws=wb.copy_worksheet(wb["元"])',
+      'ws.title="test"; ws._images=[]',
+      `recs=${JSON.stringify(lightRec)}`,
+      'r=recs[0]',
+      'ws.cell(row=2,column=4).value=datetime.date.today()',
+      'ws.cell(row=2,column=11).value=r["tanto"]',
+      'ws.cell(row=3,column=5).value=r["kumen"]',
+      'ws.cell(row=3,column=16).value=r["kanri"]',
+      'ws.cell(row=16,column=23).value=r["damage"]',
+      'buf=io.BytesIO(); wb.save(buf); buf.seek(0)',
+      'print(base64.b64encode(buf.read()).decode())'
+    ].join('\n');
+
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system: 'Execute Python and return ONLY the base64 output. Nothing else.',
+        messages: [{role:'user', content: 'Execute:\n' + pythonCode}]
+      })
+    });
+    log('APIステータス: ' + apiRes.status, apiRes.ok ? 'ok' : 'err');
+    const apiData = await apiRes.json();
+    log('APIレスポンス型: ' + JSON.stringify(apiData).substring(0,200), 'info');
+    const text = apiData.content?.find(b => b.type==='text')?.text || '';
+    log('テキスト長: ' + text.length + ' chars', 'info');
+    log('テキスト先頭: ' + text.substring(0,100), text.length > 100 ? 'ok' : 'err');
+
+    if (text.length > 100) {
+      log('✅ エクスポート成功！', 'ok');
+    } else {
+      log('❌ base64が短すぎます。APIがコードを実行していない可能性', 'err');
+    }
+  } catch(e) {
+    log('エラー: ' + e.message + '\n' + e.stack, 'err');
+  }
+}
+</script>
+</body>
+</html>
