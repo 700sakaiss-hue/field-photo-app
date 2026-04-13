@@ -867,12 +867,7 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
   // 新シートに完全コピー
   const newSheet = wb.addWorksheet(sheetName);
 
-  // 列幅をコピー
-  srcSheet.columns.forEach((col, i) => {
-    if (col.width) newSheet.getColumn(i + 1).width = col.width;
-  });
-
-  // 全列幅を3に設定（Book1準拠）
+  // 全列幅を3に統一（元シートのコピーより後に設定して上書き）
   for (let c = 1; c <= 55; c++) {
     newSheet.getColumn(c).width = 3;
   }
@@ -880,7 +875,7 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
   // 行をコピー（値・スタイル・マージ全て）
   srcSheet.eachRow({ includeEmpty: true }, (row, rowNum) => {
     const newRow = newSheet.getRow(rowNum);
-    newRow.height = 18.8; // 全行の高さを18.8に統一
+    newRow.height = 18.8;
     row.eachCell({ includeEmpty: true }, (cell, colNum) => {
       const newCell = newRow.getCell(colNum);
       // スタイルをディープコピー
@@ -934,6 +929,37 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
     const blockIdx = Math.floor(i / 2);
     const side = i % 2 === 0 ? 'left' : 'right';
     writeBlock(newSheet, BLOCK_ROWS[blockIdx], side, records[i]);
+  }
+
+  // 1ブロックごとに黒の太枠で囲む
+  // 左ブロック: 列B(2)〜AA(27), 右ブロック: 列AD(30)〜BC(55)
+  // 各ブロック: 開始行〜開始行+15（16行分）
+  const thick = { style: 'medium', color: { argb: 'FF000000' } };
+
+  function applyBlockBorder(sheet, startRow, colStart, colEnd) {
+    const endRow = startRow + 15;
+    for (let r = startRow; r <= endRow; r++) {
+      for (let c = colStart; c <= colEnd; c++) {
+        const cell = sheet.getRow(r).getCell(c);
+        const border = cell.border ? JSON.parse(JSON.stringify(cell.border)) : {};
+        if (r === startRow)  border.top    = thick;
+        if (r === endRow)    border.bottom = thick;
+        if (c === colStart)  border.left   = thick;
+        if (c === colEnd)    border.right  = thick;
+        cell.border = border;
+      }
+      sheet.getRow(r).commit();
+    }
+  }
+
+  BLOCK_ROWS.forEach(startRow => {
+    applyBlockBorder(newSheet, startRow, 2, 27);  // 左ブロック
+    applyBlockBorder(newSheet, startRow, 30, 55); // 右ブロック
+  });
+
+  // 列幅を最後に確実に3へ上書き
+  for (let c = 1; c <= 55; c++) {
+    newSheet.getColumn(c).width = 3;
   }
 
   // xlsxとしてbase64で出力
