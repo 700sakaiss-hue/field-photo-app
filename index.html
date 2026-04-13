@@ -1001,6 +1001,57 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
     writeBlock(newSheet, BLOCK_ROWS[blockIdx], side, records[i]);
   }
 
+  // ===== 写真を埋め込む =====
+  // ブロック開始行(0-indexed): 1, 18, 35
+  const BLOCK_ROWS_0 = [1, 18, 35];
+
+  // 写真エリアの列定義（0-indexed, side別）
+  const PHOTO_COLS = {
+    left:  [
+      { tl_col: 1,  br_col: 9,  label: '管理番号札' },
+      { tl_col: 10, br_col: 18, label: '全景'       },
+      { tl_col: 19, br_col: 27, label: '損傷箇所'   },
+    ],
+    right: [
+      { tl_col: 29, br_col: 37, label: '管理番号札' },
+      { tl_col: 38, br_col: 46, label: '全景'       },
+      { tl_col: 47, br_col: 55, label: '損傷箇所'   },
+    ]
+  };
+
+  for (let i = 0; i < Math.min(records.length, 6); i++) {
+    const rec = records[i];
+    const blockIdx = Math.floor(i / 2);
+    const side = i % 2 === 0 ? 'left' : 'right';
+    const startRow0 = BLOCK_ROWS_0[blockIdx];
+    const photoCols = PHOTO_COLS[side];
+    const tl_row = startRow0 + 2;
+    const br_row = startRow0 + 15;
+
+    // photos配列: [管理番号札, 全景, 損傷箇所, ...追加]
+    const photos = rec.photos || [];
+
+    for (let pi = 0; pi < Math.min(photos.length, 3); pi++) {
+      const photoData = photos[pi];
+      if (!photoData) continue;
+
+      try {
+        // base64からextensionを判定
+        const ext = photoData.startsWith('data:image/png') ? 'png' : 'jpeg';
+        const base64 = photoData.replace(/^data:image\/\w+;base64,/, '');
+
+        const imageId = wb.addImage({ base64, extension: ext });
+        newSheet.addImage(imageId, {
+          tl: { col: photoCols[pi].tl_col, row: tl_row },
+          br: { col: photoCols[pi].br_col, row: br_row },
+          editAs: 'oneCell'
+        });
+      } catch(e) {
+        console.warn(`写真埋め込みスキップ (${side}/${pi}):`, e.message);
+      }
+    }
+  }
+
   // 1ブロックごとに黒の太枠で囲む
   // 上下1行ずつ外す → startRow+1 〜 startRow+14（14行分）
   const thick = { style: 'medium', color: { argb: 'FF000000' } };
