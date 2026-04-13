@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1523">
+<title>現場撮影アプリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1523;
+    --surface: #1a2235;
+    --surface2: #222d42;
+    --border: #2e3d5a;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ログイン画面 */
+  #login-screen {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg);
+  }
+  .login-logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .login-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  .login-sub {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+  .field { margin-bottom: 1.2rem; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+  .error-msg {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 10px;
+    text-align: center;
+    min-height: 18px;
+  }
+
+  /* メインアプリ */
+  #main-app { display: none; min-height: 100dvh; flex-direction: column; }
+
+  /* ヘッダー */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .header-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .header-sub {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text3);
+    font-family: var(--mono);
+    text-transform: uppercase;
+  }
+  .logout-btn {
+    font-size: 11px;
+    color: var(--text3);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  /* タブ */
+  .tabs {
+    display: flex;
+    gap: 0;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text3);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent2);
+  }
+
+  /* コンテンツ */
+  .tab-content { display: none; flex: 1; padding: 16px; }
+  .tab-content.active { display: block; }
+
+  /* フォームセクション */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--text3);
+    text-transform: uppercase;
+    font-family: var(--mono);
+    margin-bottom: 10px;
+  }
+
+  /* 管理番号入力 */
+  .kanri-wrap {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .kanri-input {
+    flex: 1;
+    padding: 11px 13px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .kanri-input:focus { border-color: var(--accent); }
+  .kanri-input.ok { border-color: var(--green); }
+  .kanri-input.warn { border-color: var(--amber); }
+  .check-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .check-badge.ok { background: #14532d; color: var(--green); }
+  .check-badge.warn { background: #451a03; color: var(--amber); }
+  .check-badge.idle { background: var(--surface2); color: var(--text3); }
+  .kanri-status {
+    font-size: 11px;
+    min-height: 16px;
+    font-family: var(--mono);
+  }
+  .kanri-status.ok { color: var(--green); }
+  .kanri-status.warn { color: var(--amber); }
+
+  /* 自動補完情報 */
+  .auto-info {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .auto-info.hidden { display: none !important; }
+  .info-item label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    font-family: var(--mono);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .info-item span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent2);
+  }
+
+  /* 一般フォーム */
+  .form-input {
+    width: 100%;
+    padding: 11px 13px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+  /* 損傷種類 */
+  .damage-wrap { display: flex; gap: 8px; }
+  .damage-wrap select { flex: 1; }
+  .damage-wrap input { flex: 1; }
+
+  /* 写真エリア */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .photo-thumb {
+    aspect-ratio: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb .del-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background: rgba(0,0,0,0.7);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .photo-thumb .photo-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.65);
+    font-size: 9px;
+    color: #fff;
+    text-align: center;
+    padding: 2px 0;
+  }
+  .add-photo-btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--text3);
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .add-photo-btn:active { border-color: var(--accent); color: var(--accent2); }
+  #file-input { display: none; }
+
+  /* 送信ボタン */
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 4px;
+  }
+  .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 履歴 */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 13px;
+    margin-bottom: 10px;
+  }
+  .search-bar svg { flex-shrink: 0; }
+  .search-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .search-bar input::placeholder { color: var(--text3); }
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text3);
+    font-size: 11px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .report-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .report-card:active { border-color: var(--accent); }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .card-kanri {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .card-meta {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+  .card-date { font-size: 11px; color: var(--text3); text-align: right; }
+  .card-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #14532d;
+    color: var(--green);
+    margin-top: 3px;
+    display: inline-block;
+  }
+  .card-photos {
+    display: flex;
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .card-photo {
+    width: 52px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .card-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .card-photo-more {
+    width: 52px;
+    height: 40px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text3);
+    flex-shrink: 0;
+    font-family: var(--mono);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  /* 詳細モーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    margin: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    background: var(--surface2);
+    border: none;
+    border-radius: 50%;
+    color: var(--text3);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .detail-row:last-of-type { border-bottom: none; }
+  .detail-row .key { color: var(--text3); }
+  .detail-row .val { color: var(--text); font-weight: 500; text-align: right; }
+  .modal-photos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .modal-photo {
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    background: var(--bg);
+  }
+  .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* トースト */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 300;
+    transition: transform 0.25s ease;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* ローディング */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ログイン画面 -->
+<div id="login-screen">
+  <div class="login-logo">堺総合サービス</div>
+  <div class="login-title">現場撮影アプリ</div>
+  <div class="login-sub">FIELD INSPECTION SYSTEM</div>
+  <div class="login-card">
+    <div class="field">
+      <label>メールアドレス</label>
+      <input type="email" id="login-email" placeholder="example@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>パスワード</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">ログイン</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<!-- メインアプリ -->
+<div id="main-app">
+  <div class="app-header">
+    <div class="header-top">
+      <div>
+        <div class="header-sub">堺総合サービス</div>
+        <div class="header-title">現場撮影アプリ</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-shoot" onclick="switchTab('shoot')">撮影・登録</button>
+      <button class="tab" id="tab-history" onclick="switchTab('history')">過去の報告</button>
+    </div>
+  </div>
+
+  <!-- 撮影タブ -->
+  <div class="tab-content active" id="pane-shoot">
+
+    <!-- 管理番号 -->
+    <div class="section">
+      <div class="section-label">管理番号</div>
+      <div class="kanri-wrap">
+        <input type="text" class="kanri-input" id="kanri-input"
+          placeholder="例：00A000000"
+          oninput="onKanriInput()"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="check-badge idle" id="check-badge">—</div>
+      </div>
+      <div class="kanri-status" id="kanri-status"></div>
+      <div class="auto-info hidden" id="auto-info">
+        <div class="info-item"><label>区名</label><span id="info-kumen">-</span></div>
+        <div class="info-item"><label>種別</label><span id="info-shubetsu">-</span></div>
+        <div class="info-item"><label>図面番号</label><span id="info-zumen">-</span></div>
+      </div>
+    </div>
+
+    <!-- 担当者名 -->
+    <div class="section">
+      <div class="section-label">担当者名</div>
+      <input type="text" class="form-input" id="tanto-input" placeholder="氏名を入力">
+    </div>
+
+    <!-- 損傷種類 -->
+    <div class="section">
+      <div class="section-label">損傷種類</div>
+      <div class="damage-wrap">
+        <select class="form-input" id="damage-select" onchange="onDamageSelect()">
+          <option value="">選択してください</option>
+          <option value="穴あき">穴あき</option>
+          <option value="空海">空海</option>
+          <option value="割れ">割れ</option>
+          <option value="開口部開き">開口部開き</option>
+          <option value="灯具本体ガラス割れ">灯具本体ガラス割れ</option>
+          <option value="腐食">腐食</option>
+          <option value="変形">変形</option>
+          <option value="その他">その他（自由入力）</option>
+        </select>
+        <input type="text" class="form-input" id="damage-free" placeholder="損傷内容を入力"
+          style="display:none;">
+      </div>
+    </div>
+
+    <!-- 写真 -->
+    <div class="section">
+      <div class="section-label">撮影写真 <span id="photo-count" style="color:var(--text3);font-weight:400;">（0枚）</span></div>
+      <div class="photo-grid" id="photo-grid"></div>
+      <button class="add-photo-btn" onclick="document.getElementById('file-input').click()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="0.5" y="2.5" width="15" height="12" rx="2" stroke="currentColor" stroke-width="1.1"/>
+          <circle cx="8" cy="9" r="2.8" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M5.5 2.5l1-2h3l1 2" stroke="currentColor" stroke-width="1.1" fill="none"/>
+          <path d="M8 6.5v5M5.5 9h5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        写真を追加する
+      </button>
+      <input type="file" id="file-input" accept="image/*" capture="environment" multiple onchange="onFilePick(event)">
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="doSubmit()">登録して写真を保存</button>
+    <div style="height:24px;"></div>
+  </div>
+
+  <!-- 履歴タブ -->
+  <div class="tab-content" id="pane-history">
+    <div class="search-bar">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
+        <path d="M11 11l3 3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="管理番号・担当者名で検索" oninput="filterHistory()">
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all',this)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('today',this)">今日</button>
+      <button class="filter-btn" onclick="setFilter('week',this)">今週</button>
+      <button class="filter-btn" onclick="setFilter('month',this)">今月</button>
+    </div>
+    <div id="history-list"></div>
+    <div style="height:24px;"></div>
+  </div>
+</div>
+
+<!-- 詳細モーダル -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-kanri">-</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div id="modal-details"></div>
+    <div class="modal-photos" id="modal-photos"></div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getDatabase, ref, push, get, child, orderByChild, query }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+// ===== Firebase設定 =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCDwmBGAKj0v_qBAQ802uIlsU2Es00VCfk",
+  authDomain: "kinnkyu-houkoku.firebaseapp.com",
+  databaseURL: "https://kinnkyu-houkoku-default-rtdb.firebaseio.com",
+  projectId: "kinnkyu-houkoku",
+  storageBucket: "kinnkyu-houkoku.firebasestorage.app",
+  messagingSenderId: "365786088586",
+  appId: "1:365786088586:web:21a6656f4df025c4ca1973"
+};
+// ========================
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// グローバルに公開
+window._auth = auth;
+window._db = db;
+window._ref = ref;
+window._push = push;
+window._get = get;
+window._child = child;
+window._signIn = signInWithEmailAndPassword;
+window._signOut = signOut;
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+    loadHistory();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
+  }
+});
+</script>
+
+<script>
+// ===== マスターデータ読み込み =====
+let masterData = {};
+fetch('masterdata.json')
+  .then(r => r.json())
+  .then(d => { masterData = d; });
+
+// ===== 状態 =====
+let photos = []; // {dataUrl, name}
+let historyData = [];
+let currentFilter = 'all';
+
+// ===== ログイン =====
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  if (!email || !pass) { err.textContent = 'メールアドレスとパスワードを入力してください'; return; }
+  btn.innerHTML = '<span class="spinner"></span>ログイン中...';
+  btn.disabled = true;
+  err.textContent = '';
+  try {
+    await window._signIn(window._auth, email, pass);
+  } catch(e) {
+    err.textContent = 'メールアドレスまたはパスワードが違います';
+    btn.innerHTML = 'ログイン';
+    btn.disabled = false;
+  }
+}
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogout() {
+  await window._signOut(window._auth);
+}
+
+// ===== タブ切り替え =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('pane-' + tab).classList.add('active');
+  if (tab === 'history') loadHistory();
+}
+
+// ===== 管理番号チェック =====
+let checkTimer = null;
+function onKanriInput() {
+  clearTimeout(checkTimer);
+  checkTimer = setTimeout(checkKanri, 400);
+}
+
+async function checkKanri() {
+  const val = document.getElementById('kanri-input').value.trim();
+  const badge = document.getElementById('check-badge');
+  const status = document.getElementById('kanri-status');
+  const autoInfo = document.getElementById('auto-info');
+
+  if (!val) {
+    badge.className = 'check-badge idle';
+    badge.textContent = '—';
+    status.textContent = '';
+    status.className = 'kanri-status';
+    autoInfo.classList.add('hidden');
+    return;
+  }
+
+  // マスターデータ照合
+  const master = masterData[val];
+  if (master) {
+    document.getElementById('info-kumen').textContent = master[2] || '-';
+    document.getElementById('info-shubetsu').textContent = master[1] || '-';
+    document.getElementById('info-zumen').textContent = master[0] || '-';
+    autoInfo.classList.remove('hidden');
+  } else {
+    autoInfo.classList.add('hidden');
+  }
+
+  // Firebase重複チェック
+  try {
+    const dbRef = window._ref(window._db, 'reports');
+    const snap = await window._get(dbRef);
+    let dup = false;
+    if (snap.exists()) {
+      snap.forEach(child => {
+        if (child.val().kanri === val) dup = true;
+      });
+    }
+    if (dup) {
+      badge.className = 'check-badge warn';
+      badge.textContent = '!';
+      status.textContent = '⚠ この管理番号は過去に登録されています';
+      status.className = 'kanri-status warn';
+      document.getElementById('kanri-input').className = 'kanri-input warn';
+    } else {
+      badge.className = 'check-badge ok';
+      badge.textContent = '✓';
+      status.textContent = '重複なし';
+      status.className = 'kanri-status ok';
+      document.getElementById('kanri-input').className = 'kanri-input ok';
+    }
+  } catch(e) {
+    badge.className = 'check-badge idle';
+    badge.textContent = '?';
+  }
+}
+
+// ===== 損傷種類 =====
+function onDamageSelect() {
+  const sel = document.getElementById('damage-select').value;
+  const free = document.getElementById('damage-free');
+  free.style.display = sel === 'その他' ? 'block' : 'none';
+}
+
+// ===== 写真追加 =====
+async function onFilePick(e) {
+  const files = Array.from(e.target.files);
+  for (const file of files) {
+    const dataUrl = await readFile(file);
+    photos.push({ dataUrl, name: file.name });
+  }
+  e.target.value = '';
+  renderPhotos();
+}
+
+function readFile(file) {
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.readAsDataURL(file);
+  });
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '';
+  document.getElementById('photo-count').textContent = `（${photos.length}枚）`;
+  photos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `
+      <img src="${p.dataUrl}" alt="写真${i+1}">
+      <button class="del-btn" onclick="delPhoto(${i})">✕</button>
+      <div class="photo-label">写真${i+1}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function delPhoto(i) {
+  photos.splice(i, 1);
+  renderPhotos();
+}
+
+// ===== 登録・保存 =====
+async function doSubmit() {
+  const kanri = document.getElementById('kanri-input').value.trim();
+  const tanto = document.getElementById('tanto-input').value.trim();
+  const damSel = document.getElementById('damage-select').value;
+  const damFree = document.getElementById('damage-free').value.trim();
+  const damage = damSel === 'その他' ? damFree : damSel;
+
+  if (!kanri) { showToast('管理番号を入力してください', 'error'); return; }
+  if (!tanto) { showToast('担当者名を入力してください', 'error'); return; }
+  if (!damage) { showToast('損傷種類を選択・入力してください', 'error'); return; }
+  if (photos.length === 0) { showToast('写真を1枚以上追加してください', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.innerHTML = '<span class="spinner"></span>保存中...';
+  btn.disabled = true;
+
+  const now = new Date();
+  const master = masterData[kanri] || [];
+  const record = {
+    kanri,
+    tanto,
+    damage,
+    kumen: master[2] || '',
+    shubetsu: master[1] || '',
+    zumen: master[0] || '',
+    datetime: now.toISOString(),
+    photos: photos.map(p => p.dataUrl)
+  };
+
+  try {
+    // Firebaseに保存
+    await window._push(window._ref(window._db, 'reports'), record);
+
+    // 写真をスマホに保存
+    for (let i = 0; i < photos.length; i++) {
+      const link = document.createElement('a');
+      link.href = photos[i].dataUrl;
+      link.download = `${kanri}_${i+1}.jpg`;
+      link.click();
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    showToast('登録完了・写真を保存しました', 'success');
+    resetForm();
+  } catch(e) {
+    showToast('エラーが発生しました', 'error');
+  }
+
+  btn.innerHTML = '登録して写真を保存';
+  btn.disabled = false;
+}
+
+function resetForm() {
+  document.getElementById('kanri-input').value = '';
+  document.getElementById('tanto-input').value = '';
+  document.getElementById('damage-select').value = '';
+  document.getElementById('damage-free').value = '';
+  document.getElementById('damage-free').style.display = 'none';
+  document.getElementById('check-badge').className = 'check-badge idle';
+  document.getElementById('check-badge').textContent = '—';
+  document.getElementById('kanri-status').textContent = '';
+  document.getElementById('kanri-input').className = 'kanri-input';
+  document.getElementById('auto-info').classList.add('hidden');
+  photos = [];
+  renderPhotos();
+}
+
+// ===== 履歴 =====
+async function loadHistory() {
+  const list = document.getElementById('history-list');
+  list.innerHTML = '<div class="empty-state">読み込み中...</div>';
+  try {
+    const snap = await window._get(window._ref(window._db, 'reports'));
+    historyData = [];
+    if (snap.exists()) {
+      snap.forEach(c => historyData.push({ id: c.key, ...c.val() }));
+      historyData.reverse();
+    }
+    filterHistory();
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state">データを取得できませんでした</div>';
+  }
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterHistory();
+}
+
+function filterHistory() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const now = new Date();
+  const filtered = historyData.filter(r => {
+    const d = new Date(r.datetime);
+    if (currentFilter === 'today') {
+      if (d.toDateString() !== now.toDateString()) return false;
+    } else if (currentFilter === 'week') {
+      const diff = (now - d) / 864e5;
+      if (diff > 7) return false;
+    } else if (currentFilter === 'month') {
+      if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
+    }
+    if (q) {
+      const hit = (r.kanri||'').toLowerCase().includes(q) || (r.tanto||'').toLowerCase().includes(q);
+      if (!hit) return false;
+    }
+    return true;
+  });
+  renderHistory(filtered);
+}
+
+function renderHistory(data) {
+  const list = document.getElementById('history-list');
+  if (data.length === 0) {
+    list.innerHTML = '<div class="empty-state">該当する報告がありません</div>';
+    return;
+  }
+  list.innerHTML = data.map(r => {
+    const d = new Date(r.datetime);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const ps = (r.photos || []);
+    const thumbs = ps.slice(0,3).map(p =>
+      `<div class="card-photo"><img src="${p}" loading="lazy"></div>`).join('');
+    const more = ps.length > 3
+      ? `<div class="card-photo-more">+${ps.length-3}</div>` : '';
+    return `
+    <div class="report-card" onclick="showDetail('${r.id}')">
+      <div class="card-header">
+        <div>
+          <div class="card-kanri">${r.kanri||'-'}</div>
+          <div class="card-meta">${r.tanto||'-'}　${r.damage||'-'}</div>
+        </div>
+        <div>
+          <div class="card-date">${dateStr}</div>
+          <div style="text-align:right"><span class="card-badge">${ps.length}枚</span></div>
+        </div>
+      </div>
+      <div class="card-photos">${thumbs}${more}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== 詳細モーダル =====
+function showDetail(id) {
+  const r = historyData.find(x => x.id === id);
+  if (!r) return;
+  const d = new Date(r.datetime);
+  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+  document.getElementById('modal-kanri').textContent = r.kanri || '-';
+  document.getElementById('modal-details').innerHTML = `
+    <div class="detail-row"><span class="key">担当者</span><span class="val">${r.tanto||'-'}</span></div>
+    <div class="detail-row"><span class="key">撮影日時</span><span class="val">${dateStr}</span></div>
+    <div class="detail-row"><span class="key">損傷種類</span><span class="val">${r.damage||'-'}</span></div>
+    <div class="detail-row"><span class="key">区名</span><span class="val">${r.kumen||'-'}</span></div>
+    <div class="detail-row"><span class="key">種別</span><span class="val">${r.shubetsu||'-'}</span></div>
+    <div class="detail-row"><span class="key">図面番号</span><span class="val">${r.zumen||'-'}</span></div>
+  `;
+  const ps = r.photos || [];
+  document.getElementById('modal-photos').innerHTML = ps.map(p =>
+    `<div class="modal-photo"><img src="${p}" loading="lazy"></div>`).join('');
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ===== トースト =====
+let toastTimer = null;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 2800);
+}
+
+// グローバル公開
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.switchTab = switchTab;
+window.onKanriInput = onKanriInput;
+window.onDamageSelect = onDamageSelect;
+window.onFilePick = onFilePick;
+window.delPhoto = delPhoto;
+window.doSubmit = doSubmit;
+window.setFilter = setFilter;
+window.filterHistory = filterHistory;
+window.showDetail = showDetail;
+window.closeModal = closeModal;
+window.closeModalDirect = closeModalDirect;
+</script>
+</body>
+</html>
