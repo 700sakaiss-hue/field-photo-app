@@ -932,20 +932,20 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
   }
 
   // 1ブロックごとに黒の太枠で囲む
-  // 左ブロック: 列B(2)〜AA(27), 右ブロック: 列AD(30)〜BC(55)
-  // 各ブロック: 開始行〜開始行+15（16行分）
+  // 上下1行ずつ外す → startRow+1 〜 startRow+14（14行分）
   const thick = { style: 'medium', color: { argb: 'FF000000' } };
 
   function applyBlockBorder(sheet, startRow, colStart, colEnd) {
-    const endRow = startRow + 15;
-    for (let r = startRow; r <= endRow; r++) {
+    const borderStart = startRow + 1;
+    const borderEnd   = startRow + 14;
+    for (let r = borderStart; r <= borderEnd; r++) {
       for (let c = colStart; c <= colEnd; c++) {
         const cell = sheet.getRow(r).getCell(c);
         const border = cell.border ? JSON.parse(JSON.stringify(cell.border)) : {};
-        if (r === startRow)  border.top    = thick;
-        if (r === endRow)    border.bottom = thick;
-        if (c === colStart)  border.left   = thick;
-        if (c === colEnd)    border.right  = thick;
+        if (r === borderStart) border.top    = thick;
+        if (r === borderEnd)   border.bottom = thick;
+        if (c === colStart)    border.left   = thick;
+        if (c === colEnd)      border.right  = thick;
         cell.border = border;
       }
       sheet.getRow(r).commit();
@@ -957,9 +957,9 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
     applyBlockBorder(newSheet, startRow, 30, 55); // 右ブロック
   });
 
-  // 列幅を最後に確実に3へ上書き
+  // 列幅を最後に確実に3.5へ上書き
   for (let c = 1; c <= 55; c++) {
-    newSheet.getColumn(c).width = 3;
+    newSheet.getColumn(c).width = 3.5;
   }
 
   // xlsxとしてbase64で出力
