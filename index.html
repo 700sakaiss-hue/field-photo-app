@@ -170,6 +170,13 @@
 
   <div class="tab-content active" id="pane-shoot">
 
+    <!-- テスト用日付（開発者向け） -->
+    <div style="background:var(--surface2);border:1px dashed #444;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0;">TEST DATE</span>
+      <input type="date" id="test-date" class="form-input" style="flex:1;padding:6px 10px;font-size:12px;" oninput="onTestDateChange()">
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono);" id="test-date-label">今日</span>
+    </div>
+
     <div class="section">
       <div class="section-label">管理番号</div>
       <div class="kanri-wrap">
@@ -343,6 +350,7 @@ onAuthStateChanged(auth, user => {
   if (user) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'flex';
+    autoCleanOldPhotos(); // 3日以上前の写真を自動削除
     loadHistory();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
@@ -362,6 +370,67 @@ let currentSlot = -1;
 let historyData = [];
 let currentFilter = 'all';
 let deleteTargetId = null;
+let testDateOverride = null; // テスト用日付オーバーライド
+
+// ===== テスト日付 =====
+function onTestDateChange() {
+  const val = document.getElementById('test-date').value;
+  const label = document.getElementById('test-date-label');
+  if (val) {
+    testDateOverride = val;
+    label.textContent = val + ' (テスト中)';
+    label.style.color = 'var(--amber)';
+  } else {
+    testDateOverride = null;
+    label.textContent = '今日';
+    label.style.color = 'var(--text3)';
+  }
+}
+
+function getNow() {
+  // テスト日付が設定されていればそれを使う
+  if (testDateOverride) {
+    return new Date(testDateOverride + 'T12:00:00+09:00');
+  }
+  return new Date();
+}
+
+// ===== 自動クリーンアップ（3日以上前の写真を削除） =====
+async function autoCleanOldPhotos() {
+  try {
+    const snap = await window._get(window._dbRef(window._db, 'reports'));
+    if (!snap.exists()) return;
+
+    const now = new Date();
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    let deletedCount = 0;
+
+    const promises = [];
+    snap.forEach(item => {
+      const r = item.val();
+      const d = new Date(r.datetime);
+      if (d < threeDaysAgo && r.photoKeys && r.photoKeys.length > 0) {
+        // 写真データを削除
+        r.photoKeys.forEach(key => {
+          promises.push(window._remove(window._dbRef(window._db, 'photos/' + key)));
+        });
+        // reportsのphotoKeysを空にする（reportは残す）
+        promises.push(
+          window._get(window._dbRef(window._db, 'reports/' + item.key + '/photoKeys'))
+            .then(() => window._remove(window._dbRef(window._db, 'reports/' + item.key + '/photoKeys')))
+        );
+        deletedCount++;
+      }
+    });
+
+    await Promise.all(promises);
+    if (deletedCount > 0) {
+      console.log(`自動クリーン: ${deletedCount}件の写真データを削除しました`);
+    }
+  } catch(e) {
+    console.warn('自動クリーン失敗:', e.message);
+  }
+}
 
 // 画像圧縮
 function compressImage(dataUrl, maxSize=900, quality=0.75) {
@@ -539,7 +608,7 @@ async function doSubmit() {
   btn.innerHTML = '<span class="spinner"></span>登録中...';
   btn.disabled = true;
 
-  const now = new Date();
+  const now = getNow();
   const master = masterData[kanri] || [];
 
   try {
@@ -723,6 +792,7 @@ window.setFilter=setFilter; window.filterHistory=filterHistory;
 window.showDetail=showDetail; window.closeModal=closeModal; window.closeModalDirect=closeModalDirect;
 window.confirmDelete=confirmDelete; window.closeConfirm=closeConfirm; window.execDelete=execDelete;
 window.onExportDateChange=onExportDateChange; window.doExport=doExport;
+window.onTestDateChange=onTestDateChange;
 </script>
 
 <script>
