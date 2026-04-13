@@ -627,12 +627,16 @@ function setFilter(f, btn) {
 
 function filterHistory() {
   const q = document.getElementById('search-input').value.trim().toLowerCase();
-  const now = new Date();
+  const nowUtc = new Date();
+  const nowJst = new Date(nowUtc.getTime() + 9 * 60 * 60 * 1000);
   const filtered = historyData.filter(r => {
     const d = new Date(r.datetime);
-    if (currentFilter==='today' && d.toDateString()!==now.toDateString()) return false;
-    if (currentFilter==='week' && (now-d)/864e5>7) return false;
-    if (currentFilter==='month' && (d.getMonth()!==now.getMonth()||d.getFullYear()!==now.getFullYear())) return false;
+    const dJst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    if (currentFilter === 'today') {
+      if (dJst.toDateString() !== nowJst.toDateString()) return false;
+    }
+    if (currentFilter === 'week' && (nowJst - dJst) / 864e5 > 7) return false;
+    if (currentFilter === 'month' && (dJst.getMonth() !== nowJst.getMonth() || dJst.getFullYear() !== nowJst.getFullYear())) return false;
     if (q && !(r.kanri||'').toLowerCase().includes(q) && !(r.tanto||'').toLowerCase().includes(q)) return false;
     return true;
   });
@@ -644,7 +648,8 @@ function renderHistory(data) {
   if (!data.length) { list.innerHTML = '<div class="empty-state">該当する報告がありません</div>'; return; }
   list.innerHTML = data.map(r => {
     const d = new Date(r.datetime);
-    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    const dateStr = `${jst.getFullYear()}/${String(jst.getMonth()+1).padStart(2,'0')}/${String(jst.getDate()).padStart(2,'0')}`;
     const ps = r.photos||[];
     const thumbs = ps.slice(0,3).map(p => `<div class="card-photo"><img src="${p}" loading="lazy"></div>`).join('');
     const more = ps.length>3 ? `<div class="card-photo-more">+${ps.length-3}</div>` : '';
@@ -662,7 +667,8 @@ function showDetail(id) {
   const r = historyData.find(x => x.id===id); if (!r) return;
   deleteTargetId = id;
   const d = new Date(r.datetime);
-  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const dateStr = `${jst.getFullYear()}/${String(jst.getMonth()+1).padStart(2,'0')}/${String(jst.getDate()).padStart(2,'0')} ${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
   document.getElementById('modal-kanri').textContent = r.kanri||'-';
   document.getElementById('modal-details').innerHTML = `
     <div class="detail-row"><span class="key">担当者</span><span class="val">${r.tanto||'-'}</span></div>
@@ -769,8 +775,10 @@ async function onExportDateChange() {
     if (repSnap.exists()) {
       repSnap.forEach(item => {
         const r = { id: item.key, ...item.val() };
-        const rDate = r.datetime ? r.datetime.split('T')[0] : '';
-        if (rDate === targetDate) {
+        // JSTで日付比較（UTCのままだと日本時間と9時間ズレる）
+        const d = new Date(r.datetime);
+        const jstDate = new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0];
+        if (jstDate === targetDate) {
           r.photos = (r.photoKeys||[]).map(k => photoMap[k]?.data).filter(Boolean);
           r.photoLabels = (r.photoKeys||[]).map(k => photoMap[k]?.label||'').filter(Boolean);
           exportRecords.push(r);
