@@ -1043,7 +1043,7 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
         const imageId = wb.addImage({ base64, extension: ext });
         newSheet.addImage(imageId, {
           tl: { col: photoCols[pi].tl_col, row: tl_row },
-          br: { col: photoCols[pi].br_col, row: br_row },
+          br: { col: photoCols[pi].br_col, row: br_row - 1 },
           editAs: 'oneCell'
         });
       } catch(e) {
