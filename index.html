@@ -1126,9 +1126,9 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 実測値ベースの固定サイズ（5.94cm × 4.47cm）
-          const fixedW = Math.round(5.94 * 28.35); // 168pt
-          const fixedH = Math.round(4.47 * 28.35); // 127pt
+          // 横向き写真 → 実測値ベース×1.33の固定サイズ
+          const fixedW = Math.round(5.94 * 28.35 * 1.33); // 約224pt
+          const fixedH = Math.round(4.47 * 28.35 * 1.33); // 約169pt
 
           newSheet.addImage(imageId, {
             tl: { col: photoCols[pi].tl_col, row: tl_row },
