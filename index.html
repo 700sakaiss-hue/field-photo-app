@@ -1066,18 +1066,16 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 縦横比保持・中央寄せ
-          // 高さに合わせて幅を計算
-          const fitHpt = areaHpt;
-          const fitWpt = fitHpt * origRatio;
-          // 左右のオフセット（中央に寄せる）
-          const offsetWpt = (areaWpt - fitWpt) / 2;
-          // tl_colからのオフセットを列単位に変換（小数可）
-          const colWidthPt = 3.5 * 7.5;
-          const offsetCols = offsetWpt / colWidthPt;
+          // 横向き写真 → 幅基準で縦横比保持・上下中央寄せ
+          const fitWpt = areaWpt;
+          const fitHpt = fitWpt / origRatio;
+          // 上下オフセット（中央に寄せる）
+          const offsetHpt = (areaHpt - fitHpt) / 2;
+          const rowHeightPt = 18.8 * 0.75;
+          const offsetRows = offsetHpt / rowHeightPt;
 
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row },
+            tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows },
             ext: { width: Math.round(fitWpt), height: Math.round(fitHpt) },
             editAs: 'oneCell'
           });
