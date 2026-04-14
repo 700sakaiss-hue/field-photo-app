@@ -1042,30 +1042,40 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
 
         const imageId = wb.addImage({ base64, extension: ext });
 
-        // 縦横比を保持するにはtl+extのピクセル指定方式を使う
-        // まず元画像のサイズを取得
-        const imgEl = await new Promise((resolve, reject) => {
+        // 元画像の縦横比を取得
+        const imgEl = await new Promise((res, rej) => {
           const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
+          img.onload = () => res(img);
+          img.onerror = rej;
           img.src = photoData;
         });
-        const origW = imgEl.naturalWidth;
-        const origH = imgEl.naturalHeight;
+        const origRatio = imgEl.naturalWidth / imgEl.naturalHeight;
 
-        // セルエリアのおよそのピクセルサイズを推定
-        // 列幅3.5 × 8列 ≈ 28 × 7px = 196px, 行高さ18.8 × 12行 ≈ 225.6px
-        const areaW = (photoCols[pi].br_col - photoCols[pi].tl_col) * 7 * 3.5 / 3;
-        const areaH = (br_row - 1 - tl_row) * 18.8 * 0.75;
+        // セルエリアのEMU換算（ExcelJSはEMU単位）
+        // 列幅3.5 → 1列あたり約24.5pt, 行高さ18.8pt
+        // 1pt = 12700 EMU
+        const colCount = photoCols[pi].br_col - photoCols[pi].tl_col; // 8列
+        const rowCount = br_row - 1 - tl_row;                          // 12行
+        const colWidthPt  = 3.5 * 7.5;   // 1列あたりのpt（列幅単位×7.5）
+        const rowHeightPt = 18.8 * 0.75; // 1行あたりのpt（行高さ×0.75）
+        const areaW = colCount * colWidthPt * 12700; // EMU
+        const areaH = rowCount * rowHeightPt * 12700; // EMU
+        const areaRatio = areaW / areaH;
 
-        // 縦横比を保ちながらエリアに収まるサイズを計算
-        const ratio = Math.min(areaW / origW, areaH / origH);
-        const fitW = Math.round(origW * ratio);
-        const fitH = Math.round(origH * ratio);
+        let fitW, fitH;
+        if (origRatio > areaRatio) {
+          // 横長 → 幅に合わせる（上下に余白）
+          fitW = areaW;
+          fitH = Math.round(areaW / origRatio);
+        } else {
+          // 縦長 → 高さに合わせる（左右に余白）
+          fitH = areaH;
+          fitW = Math.round(areaH * origRatio);
+        }
 
         newSheet.addImage(imageId, {
           tl: { col: photoCols[pi].tl_col, row: tl_row },
-          ext: { width: fitW, height: fitH },
+          ext: { width: Math.round(fitW / 12700), height: Math.round(fitH / 12700) },
           editAs: 'oneCell'
         });
       } catch(e) {
