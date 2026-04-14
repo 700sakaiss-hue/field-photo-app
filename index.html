@@ -307,6 +307,19 @@
   </div>
 </div>
 
+<!-- 重複確認ダイアログ -->
+<div class="confirm-overlay" id="dup-confirm-overlay">
+  <div class="confirm-box">
+    <div style="font-size:28px;margin-bottom:8px;">⚠️</div>
+    <div class="confirm-title" style="color:var(--red);">管理番号が重複しています</div>
+    <div class="confirm-sub" id="dup-confirm-sub"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeDupConfirm()">戻る</button>
+      <button class="confirm-ok" style="background:var(--red);" onclick="submitForce()">このまま登録する</button>
+    </div>
+  </div>
+</div>
+
 <!-- 登録完了モーダル -->
 <div class="complete-overlay" id="complete-overlay">
   <div class="complete-box">
@@ -608,6 +621,34 @@ async function doSubmit() {
   if (!damage) { showToast('損傷種類を選択してください', 'error'); return; }
   if (!slotPhotos.every(p => p)) { showToast('3枚すべての写真を選択してください', 'error'); return; }
 
+  // 重複チェック
+  const isDup = document.getElementById('check-badge').classList.contains('warn');
+  if (isDup) {
+    document.getElementById('dup-confirm-sub').textContent =
+      `「${kanri}」は過去にすでに登録されています。このまま登録を続けますか？`;
+    document.getElementById('dup-confirm-overlay').classList.add('open');
+    return;
+  }
+
+  await execSubmit();
+}
+
+function closeDupConfirm() {
+  document.getElementById('dup-confirm-overlay').classList.remove('open');
+}
+
+async function submitForce() {
+  closeDupConfirm();
+  await execSubmit();
+}
+
+async function execSubmit() {
+  const kanri = document.getElementById('kanri-input').value.trim();
+  const tanto = document.getElementById('tanto-input').value.trim();
+  const damSel = document.getElementById('damage-select').value;
+  const damFree = document.getElementById('damage-free').value.trim();
+  const damage = damSel === 'その他' ? damFree : damSel;
+
   const btn = document.getElementById('submit-btn');
   btn.innerHTML = '<span class="spinner"></span>登録中...';
   btn.disabled = true;
@@ -800,6 +841,7 @@ window.showDetail=showDetail; window.closeModal=closeModal; window.closeModalDir
 window.confirmDelete=confirmDelete; window.closeConfirm=closeConfirm; window.execDelete=execDelete;
 window.onExportDateChange=onExportDateChange; window.doExport=doExport;
 window.onTestDateChange=onTestDateChange;
+window.closeDupConfirm=closeDupConfirm; window.submitForce=submitForce;
 </script>
 
 <script>
