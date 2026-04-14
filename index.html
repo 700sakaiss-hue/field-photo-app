@@ -1051,33 +1051,37 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
         });
         const origRatio = imgEl.naturalWidth / imgEl.naturalHeight;
 
-        // セルエリアのEMU換算（ExcelJSはEMU単位）
-        // 列幅3.5 → 1列あたり約24.5pt, 行高さ18.8pt
-        // 1pt = 12700 EMU
-        const colCount = photoCols[pi].br_col - photoCols[pi].tl_col; // 8列
-        const rowCount = br_row - 1 - tl_row;                          // 12行
-        const colWidthPt  = 3.5 * 7.5;   // 1列あたりのpt（列幅単位×7.5）
-        const rowHeightPt = 18.8 * 0.75; // 1行あたりのpt（行高さ×0.75）
-        const areaW = colCount * colWidthPt * 12700; // EMU
-        const areaH = rowCount * rowHeightPt * 12700; // EMU
-        const areaRatio = areaW / areaH;
+        // セルエリアのpt換算
+        const colCount   = photoCols[pi].br_col - photoCols[pi].tl_col;
+        const rowCount   = br_row - 1 - tl_row;
+        const areaWpt    = colCount   * 3.5 * 7.5;
+        const areaHpt    = rowCount   * 18.8 * 0.75;
+        const areaRatio  = areaWpt / areaHpt;
 
-        let fitW, fitH;
-        if (origRatio > areaRatio) {
-          // 横長 → 幅に合わせる（上下に余白）
-          fitW = areaW;
-          fitH = Math.round(areaW / origRatio);
+        if (origRatio <= areaRatio) {
+          // 縦向き写真 → セルいっぱい（引き伸ばしあり）
+          newSheet.addImage(imageId, {
+            tl: { col: photoCols[pi].tl_col, row: tl_row },
+            br: { col: photoCols[pi].br_col, row: br_row - 1 },
+            editAs: 'oneCell'
+          });
         } else {
-          // 縦長 → 高さに合わせる（左右に余白）
-          fitH = areaH;
-          fitW = Math.round(areaH * origRatio);
-        }
+          // 横向き写真 → 縦横比保持・中央寄せ
+          // 高さに合わせて幅を計算
+          const fitHpt = areaHpt;
+          const fitWpt = fitHpt * origRatio;
+          // 左右のオフセット（中央に寄せる）
+          const offsetWpt = (areaWpt - fitWpt) / 2;
+          // tl_colからのオフセットを列単位に変換（小数可）
+          const colWidthPt = 3.5 * 7.5;
+          const offsetCols = offsetWpt / colWidthPt;
 
-        newSheet.addImage(imageId, {
-          tl: { col: photoCols[pi].tl_col, row: tl_row },
-          ext: { width: Math.round(fitW / 12700), height: Math.round(fitH / 12700) },
-          editAs: 'oneCell'
-        });
+          newSheet.addImage(imageId, {
+            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row },
+            ext: { width: Math.round(fitWpt), height: Math.round(fitHpt) },
+            editAs: 'oneCell'
+          });
+        }
       } catch(e) {
         console.warn(`写真埋め込みスキップ (${side}/${pi}):`, e.message);
       }
