@@ -1126,18 +1126,13 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 幅いっぱい・縦横比保持・引き伸ばしなし
-          // ExcelJSのextはEMU単位(1pt = 12700EMU, 列幅1単位 ≈ 7.5pt)
-          const fitWemu = Math.round(areaWpt * 12700);
-          const fitHemu = Math.round(fitWemu / origRatio);
-          const areaHemu = Math.round(areaHpt * 12700);
-          const offsetHemu = Math.max(0, (areaHemu - fitHemu) / 2);
-          const rowHeightEmu = Math.round(18.8 * 0.75 * 12700);
-          const offsetRows = offsetHemu / rowHeightEmu;
+          // 横向き写真 → 実測値ベースの固定サイズ（5.94cm × 4.47cm）
+          const fixedW = Math.round(5.94 * 28.35); // 168pt
+          const fixedH = Math.round(4.47 * 28.35); // 127pt
 
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows },
-            ext: { width: fitWemu, height: fitHemu },
+            tl: { col: photoCols[pi].tl_col, row: tl_row },
+            ext: { width: fixedW, height: fixedH },
             editAs: 'oneCell'
           });
         }
