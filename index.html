@@ -311,7 +311,7 @@
 <div class="confirm-overlay" id="dup-confirm-overlay">
   <div class="confirm-box">
     <div style="font-size:28px;margin-bottom:8px;">⚠️</div>
-    <div class="confirm-title" style="color:var(--red);">管理番号が重複しています</div>
+    <div class="confirm-title" style="color:var(--red);" id="dup-confirm-title">確認</div>
     <div class="confirm-sub" id="dup-confirm-sub"></div>
     <div class="confirm-btns">
       <button class="confirm-cancel" onclick="closeDupConfirm()">戻る</button>
@@ -624,8 +624,19 @@ async function doSubmit() {
   // 重複チェック
   const isDup = document.getElementById('check-badge').classList.contains('warn');
   if (isDup) {
+    document.getElementById('dup-confirm-title').textContent = '管理番号が重複しています';
     document.getElementById('dup-confirm-sub').textContent =
       `「${kanri}」は過去にすでに登録されています。このまま登録を続けますか？`;
+    document.getElementById('dup-confirm-overlay').classList.add('open');
+    return;
+  }
+
+  // マスターデータにない場合
+  const inMaster = !!masterData[kanri];
+  if (!inMaster) {
+    document.getElementById('dup-confirm-title').textContent = '点検リストにない管理番号です';
+    document.getElementById('dup-confirm-sub').textContent =
+      `「${kanri}」は点検リストにありません。このまま登録を続けますか？`;
     document.getElementById('dup-confirm-overlay').classList.add('open');
     return;
   }
