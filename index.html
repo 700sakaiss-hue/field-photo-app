@@ -1041,9 +1041,31 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
         const base64 = photoData.replace(/^data:image\/\w+;base64,/, '');
 
         const imageId = wb.addImage({ base64, extension: ext });
+
+        // 縦横比を保持するにはtl+extのピクセル指定方式を使う
+        // まず元画像のサイズを取得
+        const imgEl = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = photoData;
+        });
+        const origW = imgEl.naturalWidth;
+        const origH = imgEl.naturalHeight;
+
+        // セルエリアのおよそのピクセルサイズを推定
+        // 列幅3.5 × 8列 ≈ 28 × 7px = 196px, 行高さ18.8 × 12行 ≈ 225.6px
+        const areaW = (photoCols[pi].br_col - photoCols[pi].tl_col) * 7 * 3.5 / 3;
+        const areaH = (br_row - 1 - tl_row) * 18.8 * 0.75;
+
+        // 縦横比を保ちながらエリアに収まるサイズを計算
+        const ratio = Math.min(areaW / origW, areaH / origH);
+        const fitW = Math.round(origW * ratio);
+        const fitH = Math.round(origH * ratio);
+
         newSheet.addImage(imageId, {
           tl: { col: photoCols[pi].tl_col, row: tl_row },
-          br: { col: photoCols[pi].br_col, row: br_row - 1 },
+          ext: { width: fitW, height: fitH },
           editAs: 'oneCell'
         });
       } catch(e) {
