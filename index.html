@@ -1126,15 +1126,18 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 幅いっぱい・縦横比保持・上寄せ
-          const fitWpt = areaWpt;
-          const fitHpt = fitWpt / origRatio;
-          const rowHeightPt = 18.8 * 0.75;
-          const fitRows = fitHpt / rowHeightPt;
+          // 横向き写真 → 幅いっぱい・縦横比保持・引き伸ばしなし
+          // ExcelJSのextはEMU単位(1pt = 12700EMU, 列幅1単位 ≈ 7.5pt)
+          const fitWemu = Math.round(areaWpt * 12700);
+          const fitHemu = Math.round(fitWemu / origRatio);
+          const areaHemu = Math.round(areaHpt * 12700);
+          const offsetHemu = Math.max(0, (areaHemu - fitHemu) / 2);
+          const rowHeightEmu = Math.round(18.8 * 0.75 * 12700);
+          const offsetRows = offsetHemu / rowHeightEmu;
 
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col, row: tl_row },
-            br: { col: photoCols[pi].br_col, row: tl_row + fitRows },
+            tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows },
+            ext: { width: fitWemu, height: fitHemu },
             editAs: 'oneCell'
           });
         }
