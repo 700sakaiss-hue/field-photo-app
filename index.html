@@ -1126,16 +1126,15 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 幅いっぱい・縦横比保持・上下中央寄せ
+          // 横向き写真 → 幅いっぱい・縦横比保持・上寄せ
           const fitWpt = areaWpt;
           const fitHpt = fitWpt / origRatio;
-          const offsetHpt = (areaHpt - fitHpt) / 2;
           const rowHeightPt = 18.8 * 0.75;
-          const offsetRows = Math.max(0, offsetHpt / rowHeightPt);
+          const fitRows = fitHpt / rowHeightPt;
 
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows },
-            ext: { width: Math.round(fitWpt), height: Math.round(fitHpt) },
+            tl: { col: photoCols[pi].tl_col, row: tl_row },
+            br: { col: photoCols[pi].br_col, row: tl_row + fitRows },
             editAs: 'oneCell'
           });
         }
