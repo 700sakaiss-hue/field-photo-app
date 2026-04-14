@@ -1126,7 +1126,7 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 幅いっぱい・縦横比保持・上下中央寄せ
+          // 横向き写真 → 幅いっぱい・縦横比保持・上下中央寄せ（引き伸ばしなし）
           const fitWpt = areaWpt;
           const fitHpt = fitWpt / origRatio;
           const offsetHpt = (areaHpt - fitHpt) / 2;
@@ -1135,7 +1135,7 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
 
           newSheet.addImage(imageId, {
             tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows },
-            br: { col: photoCols[pi].br_col, row: br_row - 1 },
+            ext: { width: Math.round(fitWpt * 9525), height: Math.round(fitHpt * 9525) },
             editAs: 'oneCell'
           });
         }
