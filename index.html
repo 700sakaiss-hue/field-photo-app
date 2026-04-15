@@ -69,10 +69,10 @@
   .fixed-photo-slot{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;border:1.5px dashed var(--border);background:var(--input);transition:border-color .15s;}
   .fixed-photo-slot:active{border-color:var(--accent);}
   .fixed-photo-slot.filled{border-style:solid;border-color:var(--green);}
-  .slot-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text3);font-size:11px;}
+  .slot-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text3);font-size:12px;font-weight:500;}
   .slot-filled{width:100%;height:100%;position:relative;}
   .slot-filled img{width:100%;height:100%;object-fit:cover;display:block;}
-  .slot-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);font-size:9px;color:#fff;text-align:center;padding:3px 0;}
+  .slot-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);font-size:11px;font-weight:500;color:#fff;text-align:center;padding:4px 0;}
   .slot-del{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,.6);border:none;border-radius:50%;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .slot-hint{font-size:10px;color:var(--text3);text-align:center;margin-bottom:12px;font-family:var(--mono);}
 
@@ -771,10 +771,17 @@ function renderHistory(data) {
   list.innerHTML = data.map(r => {
     const { dateStr } = toDisplayDate(r.datetime);
     const photoCount = (r.photoKeys||[]).length;
+    const hasExtra = photoCount > 3;
     return `<div class="report-card" onclick="showDetail('${r.id}')">
       <div class="card-header">
         <div><div class="card-kanri">${r.kanri||'-'}</div><div class="card-meta">${r.tanto||'-'}　${r.damage||'-'}</div></div>
-        <div><div class="card-date">${dateStr}</div><div style="text-align:right"><span class="card-badge">${photoCount}枚</span></div></div>
+        <div>
+          <div class="card-date">${dateStr}</div>
+          <div style="text-align:right;display:flex;gap:4px;justify-content:flex-end;margin-top:3px;">
+            <span class="card-badge">${photoCount}枚</span>
+            ${hasExtra ? `<span class="card-badge" style="background:#fef3c7;color:#b45309;">追加あり</span>` : ''}
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -940,11 +947,16 @@ async function onExportDateChange() {
     }
 
     document.getElementById('export-count').textContent = `${exportRecords.length}件`;
-    document.getElementById('export-list').innerHTML = exportRecords.map(r => `
-      <div style="display:flex;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
+    document.getElementById('export-list').innerHTML = exportRecords.map(r => {
+      const hasExtra = (r.photoKeys||[]).length > 3;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
         <span style="font-family:var(--mono);color:var(--text);">${r.kanri||'-'}</span>
-        <span style="color:var(--text3);">${r.tanto||'-'}　${r.damage||'-'}</span>
-      </div>`).join('');
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${hasExtra ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#b45309;">追加あり</span>` : ''}
+          <span style="color:var(--text3);">${r.tanto||'-'}　${r.damage||'-'}</span>
+        </div>
+      </div>`;
+    }).join('');
 
     previewSection.style.display = 'block';
     exportBtn.disabled = false;
