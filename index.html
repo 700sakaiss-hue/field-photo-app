@@ -964,14 +964,36 @@ async function onExportDateChange() {
       return;
     }
 
-    // 重複管理番号を検出
-    const kanriCount = {};
-    exportRecords.forEach(r => { kanriCount[r.kanri] = (kanriCount[r.kanri]||0) + 1; });
+    // 重複管理番号を検出（historyData全件と照合）
+    // historyDataが空の場合は全件取得して照合
+    let allKanriSet = new Set();
+    if (historyData.length > 0) {
+      // 既にキャッシュがある場合はそれを使う
+      const kanriCount = {};
+      historyData.forEach(r => { kanriCount[r.kanri] = (kanriCount[r.kanri]||0) + 1; });
+      Object.keys(kanriCount).forEach(k => { if (kanriCount[k] > 1) allKanriSet.add(k); });
+    } else {
+      // キャッシュがない場合はFirebaseから全件取得
+      try {
+        const allSnap = await window._get(window._dbRef(window._db, 'reports'));
+        const kanriCount = {};
+        if (allSnap.exists()) allSnap.forEach(item => {
+          const k = item.val().kanri;
+          kanriCount[k] = (kanriCount[k]||0) + 1;
+        });
+        Object.keys(kanriCount).forEach(k => { if (kanriCount[k] > 1) allKanriSet.add(k); });
+      } catch(e) {
+        // 取得失敗時はエクスポート内のみで判定
+        const kanriCount = {};
+        exportRecords.forEach(r => { kanriCount[r.kanri] = (kanriCount[r.kanri]||0) + 1; });
+        Object.keys(kanriCount).forEach(k => { if (kanriCount[k] > 1) allKanriSet.add(k); });
+      }
+    }
 
     document.getElementById('export-count').textContent = `${exportRecords.length}件`;
     document.getElementById('export-list').innerHTML = exportRecords.map(r => {
       const hasExtra = (r.photoKeys||[]).length > 3;
-      const isDup = kanriCount[r.kanri] > 1;
+      const isDup = allKanriSet.has(r.kanri);
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
         <span style="font-family:var(--mono);color:var(--text);">${r.kanri||'-'}</span>
         <div style="display:flex;align-items:center;gap:6px;">
