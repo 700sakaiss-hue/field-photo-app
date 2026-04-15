@@ -747,6 +747,10 @@ async function loadHistory() {
       });
       historyData.reverse();
     }
+    // 重複管理番号を検出（2件以上ある管理番号）
+    const kanriCount = {};
+    historyData.forEach(r => { kanriCount[r.kanri] = (kanriCount[r.kanri]||0) + 1; });
+    historyData.forEach(r => { r.isDup = kanriCount[r.kanri] > 1; });
     filterHistory();
   } catch(e) {
     list.innerHTML = '<div class="empty-state">データを取得できませんでした</div>';
@@ -784,12 +788,16 @@ function renderHistory(data) {
     const hasExtra = photoCount > 3;
     return `<div class="report-card" onclick="showDetail('${r.id}')">
       <div class="card-header">
-        <div><div class="card-kanri">${r.kanri||'-'}</div><div class="card-meta">${r.tanto||'-'}　${r.damage||'-'}</div></div>
+        <div>
+          <div class="card-kanri">${r.kanri||'-'}</div>
+          <div class="card-meta">${r.tanto||'-'}　${r.damage||'-'}</div>
+        </div>
         <div>
           <div class="card-date">${dateStr}</div>
-          <div style="text-align:right;display:flex;gap:4px;justify-content:flex-end;margin-top:3px;">
-            <span class="card-badge">${photoCount}枚</span>
+          <div style="text-align:right;display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;margin-top:3px;">
+            ${r.isDup ? `<span class="card-badge" style="background:#fef2f2;color:#dc2626;">重複</span>` : ''}
             ${hasExtra ? `<span class="card-badge" style="background:#fef3c7;color:#b45309;">追加あり</span>` : ''}
+            <span class="card-badge">${photoCount}枚</span>
           </div>
         </div>
       </div>
@@ -956,12 +964,18 @@ async function onExportDateChange() {
       return;
     }
 
+    // 重複管理番号を検出
+    const kanriCount = {};
+    exportRecords.forEach(r => { kanriCount[r.kanri] = (kanriCount[r.kanri]||0) + 1; });
+
     document.getElementById('export-count').textContent = `${exportRecords.length}件`;
     document.getElementById('export-list').innerHTML = exportRecords.map(r => {
       const hasExtra = (r.photoKeys||[]).length > 3;
+      const isDup = kanriCount[r.kanri] > 1;
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
         <span style="font-family:var(--mono);color:var(--text);">${r.kanri||'-'}</span>
         <div style="display:flex;align-items:center;gap:6px;">
+          ${isDup ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#fef2f2;color:#dc2626;">重複</span>` : ''}
           ${hasExtra ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#b45309;">追加あり</span>` : ''}
           <span style="color:var(--text3);">${r.tanto||'-'}　${r.damage||'-'}</span>
         </div>
