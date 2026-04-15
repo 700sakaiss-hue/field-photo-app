@@ -32,6 +32,7 @@
 
   #main-app{display:none;min-height:100dvh;flex-direction:column;}
   .app-header{background:#00489d;border-bottom:none;padding:12px 16px 0;position:sticky;top:0;z-index:100;}
+  .header-inner{max-width:480px;margin:0 auto;}
   .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .header-title{font-size:16px;font-weight:700;color:#fff;}
   .header-sub{font-size:10px;letter-spacing:.12em;color:#bfdbfe;font-family:var(--mono);}
@@ -41,6 +42,7 @@
   .tab.active{color:#fff;border-bottom-color:#fff;}
   .tab-content{display:none;flex:1;padding:16px;}
   .tab-content.active{display:block;}
+  .tab-inner{max-width:480px;margin:0 auto;}
 
   .section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
   .section-label{font-size:13px;font-weight:500;letter-spacing:.02em;color:var(--text);font-family:'Noto Sans JP',sans-serif;margin-bottom:10px;}
@@ -159,18 +161,21 @@
 
 <div id="main-app">
   <div class="app-header">
-    <div class="header-top">
-      <div><div class="header-sub">堺総合サービス</div><div class="header-title">現場撮影アプリ</div></div>
-      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
-    </div>
-    <div class="tabs">
-      <button class="tab active" id="tab-shoot" onclick="switchTab('shoot')">撮影・登録</button>
-      <button class="tab" id="tab-history" onclick="switchTab('history')">過去の報告</button>
-      <button class="tab" id="tab-export" onclick="switchTab('export')">エクスポート</button>
+    <div class="header-inner">
+      <div class="header-top">
+        <div><div class="header-sub">堺総合サービス</div><div class="header-title">現場撮影アプリ</div></div>
+        <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" id="tab-shoot" onclick="switchTab('shoot')">撮影・登録</button>
+        <button class="tab" id="tab-history" onclick="switchTab('history')">過去の報告</button>
+        <button class="tab" id="tab-export" onclick="switchTab('export')">エクスポート</button>
+      </div>
     </div>
   </div>
 
   <div class="tab-content active" id="pane-shoot">
+  <div class="tab-inner">
 
     <!-- テスト用日付（開発者向け） -->
     <div style="background:var(--surface2);border:1px dashed #444;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
@@ -252,9 +257,11 @@
 
     <button class="submit-btn" id="submit-btn" onclick="doSubmit()" disabled>緊急報告を登録</button>
     <div style="height:24px;"></div>
-  </div>
+  </div><!-- tab-inner -->
+  </div><!-- pane-shoot -->
 
   <div class="tab-content" id="pane-history">
+  <div class="tab-inner">
     <div class="search-bar">
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/><path d="M11 11l3 3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/></svg>
       <input type="text" id="search-input" placeholder="管理番号・担当者名で検索" oninput="filterHistory()">
@@ -267,10 +274,12 @@
     </div>
     <div id="history-list"></div>
     <div style="height:24px;"></div>
-  </div>
+  </div><!-- tab-inner -->
+  </div><!-- pane-history -->
 
   <!-- エクスポートタブ -->
   <div class="tab-content" id="pane-export">
+  <div class="tab-inner">
     <div class="section">
       <div class="section-label">エクスポート日付</div>
       <input type="date" class="form-input" id="export-date" onchange="onExportDateChange()">
@@ -283,9 +292,10 @@
     <div id="export-empty" style="display:none;" class="empty-state">この日付の報告はありません</div>
     <button class="submit-btn" id="export-btn" onclick="doExport()" disabled style="background:#059669;">Excelをダウンロード</button>
     <div style="height:24px;"></div>
-  </div>
+  </div><!-- tab-inner -->
+  </div><!-- pane-export -->
 
-</div>
+</div><!-- main-app -->
 
 <!-- 詳細モーダル -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
