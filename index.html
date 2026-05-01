@@ -511,7 +511,7 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('pane-' + tab).classList.add('active');
   if (tab === 'history') loadHistory();
-  if (tab === 'export') initExportDate();
+  if (tab === 'export') window.initExportDate && window.initExportDate();
 }
 
 // 管理番号
@@ -893,13 +893,11 @@ window.doSubmit=doSubmit; window.closeComplete=closeComplete;
 window.setFilter=setFilter; window.filterHistory=filterHistory;
 window.showDetail=showDetail; window.closeModal=closeModal; window.closeModalDirect=closeModalDirect;
 window.confirmDelete=confirmDelete; window.closeConfirm=closeConfirm; window.execDelete=execDelete;
-window.onExportDateChange=onExportDateChange; window.doExport=doExport;
 window.onTestDateChange=onTestDateChange;
 window.closeDupConfirm=closeDupConfirm; window.submitForce=submitForce;
 </script>
 
 <script>
-// ===== エクスポート =====
 
 // 今日の日付をデフォルトセット（タブ表示時）
 function initExportDate() {
@@ -1187,28 +1185,33 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
         });
         const origRatio = imgEl.naturalWidth / imgEl.naturalHeight;
 
-        // セルエリアのpt換算
-        const colCount   = photoCols[pi].br_col - photoCols[pi].tl_col;
-        const rowCount   = br_row - 1 - tl_row;
-        const areaWpt    = colCount   * 3.5 * 7.5;
-        const areaHpt    = rowCount   * 18.8 * 0.75;
-        const areaRatio  = areaWpt / areaHpt;
+        // セル実測値（Excelで確認）
+        const cellWpt = 23.04 * 7.5;  // 列幅単位 → pt: 172.8pt
+        const cellHpt = 225;           // 高さpt: 225pt
+        const cellRatio = cellWpt / cellHpt;
 
-        if (origRatio <= areaRatio) {
-          // 縦向き写真 → セルいっぱい（引き伸ばしあり）
+        if (origRatio <= cellRatio) {
+          // 縦向き写真 → 高さ基準・上下中央（左右余白ほぼなし）
+          const fitH = cellHpt;
+          const fitW = fitH * origRatio;
+          const offsetWpt = (cellWpt - fitW) / 2;
+          const colWpt = 3.5 * 7.5;
+          const offsetCols = offsetWpt / colWpt;
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col, row: tl_row },
-            br: { col: photoCols[pi].br_col, row: br_row - 1 },
+            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row },
+            ext: { width: Math.round(fitW), height: Math.round(fitH) },
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 実測値ベース×1.33の固定サイズ
-          const fixedW = Math.round(5.94 * 28.35 * 1.33); // 約224pt
-          const fixedH = Math.round(4.47 * 28.35 * 1.33); // 約169pt
-
+          // 横向き写真 → 幅基準・上下中央寄せ
+          const fitW = cellWpt;
+          const fitH = fitW / origRatio;
+          const offsetHpt = (cellHpt - fitH) / 2;
+          const rowHpt = 18.8;
+          const offsetRows = offsetHpt / rowHpt;
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col, row: tl_row },
-            ext: { width: fixedW, height: fixedH },
+            tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows },
+            ext: { width: Math.round(fitW), height: Math.round(fitH) },
             editAs: 'oneCell'
           });
         }
@@ -1256,6 +1259,9 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
+
+window.onExportDateChange=onExportDateChange; window.doExport=doExport;
+window.initExportDate=initExportDate;
 
 </script>
 </body>
