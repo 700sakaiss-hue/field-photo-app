@@ -1203,9 +1203,9 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 指定サイズ（5.9cm×4.43cm）・上下左右中央寄せ
-          const fixedW = Math.round(5.9  * 28.35); // 167pt
-          const fixedH = Math.round(4.43 * 28.35); // 126pt
+          // 横向き写真 → 指定サイズ（7.78cm×5.89cm）・上下左右中央寄せ
+          const fixedW = Math.round(7.78 * 28.35); // 221pt
+          const fixedH = Math.round(5.89 * 28.35); // 167pt
           // 上下中央
           const offsetHpt  = (cellHpt - fixedH) / 2;
           const offsetRows = offsetHpt / 18.8;
