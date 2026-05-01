@@ -1191,30 +1191,31 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
         const cellRatio = cellWpt / cellHpt;
 
         if (origRatio <= cellRatio) {
-          // 縦向き写真 → 高さ基準・左右中央寄せ
-          const fitH = cellHpt;
-          const fitW = fitH * origRatio;
-          const offsetWpt = (cellWpt - fitW) / 2;
-          const colWpt = 3.5 * 7.5;
-          const offsetCols = Math.max(0, offsetWpt / colWpt);
+          // 縦向き写真 → 高さ上限5.89cm・縦横比で幅を計算・左右中央寄せ
+          const maxH = Math.round(5.89 * 28.35);
+          const fitH = Math.min(maxH, cellHpt);
+          const fitW = Math.round(fitH * origRatio);
+          const offsetWpt  = (cellWpt - fitW) / 2;
+          const offsetCols = Math.max(0, offsetWpt / (3.5 * 7.5));
+          const offsetHpt  = (cellHpt - fitH) / 2;
+          const offsetRows = offsetHpt / 18.8;
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row },
-            ext: { width: Math.round(fitW), height: Math.round(fitH) },
+            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row + offsetRows },
+            ext: { width: fitW, height: fitH },
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 指定サイズ（7.78cm×5.89cm）・上下左右中央寄せ
-          const fixedW = Math.round(7.78 * 28.35); // 221pt
-          const fixedH = Math.round(5.89 * 28.35); // 167pt
-          // 上下中央
-          const offsetHpt  = (cellHpt - fixedH) / 2;
+          // 横向き写真 → 幅上限7.78cm・縦横比で高さを計算・上下左右中央寄せ
+          const maxW = Math.round(7.78 * 28.35);
+          const fitW = Math.min(maxW, cellWpt);
+          const fitH = Math.round(fitW / origRatio);
+          const offsetHpt  = (cellHpt - fitH) / 2;
           const offsetRows = offsetHpt / 18.8;
-          // 左右中央
-          const offsetWpt  = (cellWpt - fixedW) / 2;
+          const offsetWpt  = (cellWpt - fitW) / 2;
           const offsetCols = Math.max(0, offsetWpt / (3.5 * 7.5));
           newSheet.addImage(imageId, {
             tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row + offsetRows },
-            ext: { width: fixedW, height: fixedH },
+            ext: { width: fitW, height: fitH },
             editAs: 'oneCell'
           });
         }
