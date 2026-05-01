@@ -1192,28 +1192,28 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
 
         if (origRatio <= cellRatio) {
           // 縦向き写真 → 固定サイズ（幅7.76cm × 高さ10.38cm）・上下左右中央寄せ
-          const fixedW = Math.round(7.76  * 28.35); // 220pt
-          const fixedH = Math.round(10.38 * 28.35); // 294pt
-          const offsetHpt  = (cellHpt - fixedH) / 2;
-          const offsetRows = offsetHpt / 18.8;
-          const offsetWpt  = (cellWpt - fixedW) / 2;
-          const offsetCols = Math.max(0, offsetWpt / (3.5 * 7.5));
+          const fixedW_v = Math.round(7.76  * 28.35); // 220pt
+          const fixedH_v = Math.round(10.38 * 28.35); // 294pt
+          const offsetHpt_v  = (cellHpt - fixedH_v) / 2;
+          const offsetRows_v = Math.max(0, offsetHpt_v / 18.8);
+          const offsetWpt_v  = (cellWpt - fixedW_v) / 2;
+          const offsetCols_v = Math.max(0, offsetWpt_v / (3.5 * 7.5));
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row + offsetRows },
-            ext: { width: fixedW, height: fixedH },
+            tl: { col: photoCols[pi].tl_col + offsetCols_v, row: tl_row + offsetRows_v },
+            ext: { width: fixedW_v, height: fixedH_v },
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 固定サイズ（7.78cm × 5.89cm）・上下左右中央寄せ
-          const fixedW = Math.round(7.78 * 28.35); // 221pt
-          const fixedH = Math.round(5.89 * 28.35); // 167pt
-          const offsetHpt  = (cellHpt - fixedH) / 2;
-          const offsetRows = offsetHpt / 18.8;
-          const offsetWpt  = (cellWpt - fixedW) / 2;
-          const offsetCols = Math.max(0, offsetWpt / (3.5 * 7.5));
+          // 横向き写真 → 固定サイズ（幅7.78cm × 高さ5.89cm）・上下左右中央寄せ
+          const fixedW_h = Math.round(7.78 * 28.35); // 221pt
+          const fixedH_h = Math.round(5.89 * 28.35); // 167pt
+          const offsetHpt_h  = (cellHpt - fixedH_h) / 2;
+          const offsetRows_h = Math.max(0, offsetHpt_h / 18.8);
+          const offsetWpt_h  = (cellWpt - fixedW_h) / 2;
+          const offsetCols_h = Math.max(0, offsetWpt_h / (3.5 * 7.5));
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col + offsetCols, row: tl_row + offsetRows },
-            ext: { width: fixedW, height: fixedH },
+            tl: { col: photoCols[pi].tl_col + offsetCols_h, row: tl_row + offsetRows_h },
+            ext: { width: fixedW_h, height: fixedH_h },
             editAs: 'oneCell'
           });
         }
