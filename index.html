@@ -1191,9 +1191,9 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
         const cellRatio = cellWpt / cellHpt;
 
         if (origRatio <= cellRatio) {
-          // 縦向き写真 → 固定サイズ（10.38cm × 7.76cm）・上下左右中央寄せ
-          const fixedW = Math.round(10.38 * 28.35); // 294pt
-          const fixedH = Math.round(7.76  * 28.35); // 220pt
+          // 縦向き写真 → 固定サイズ（幅7.76cm × 高さ10.38cm）・上下左右中央寄せ
+          const fixedW = Math.round(7.76  * 28.35); // 220pt
+          const fixedH = Math.round(10.38 * 28.35); // 294pt
           const offsetHpt  = (cellHpt - fixedH) / 2;
           const offsetRows = offsetHpt / 18.8;
           const offsetWpt  = (cellWpt - fixedW) / 2;
