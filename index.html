@@ -164,7 +164,10 @@
     <div class="header-inner">
       <div class="header-top">
         <div><div class="header-sub">堺総合サービス</div><div class="header-title">緊急報告アプリ</div></div>
-        <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:10px;color:#bfdbfe;text-align:right;" id="header-user"></div>
+          <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+        </div>
       </div>
       <div class="tabs">
         <button class="tab active" id="tab-shoot" onclick="switchTab('shoot')">撮影・登録</button>
@@ -306,7 +309,7 @@
     </div>
     <div id="modal-details"></div>
     <div class="modal-photos" id="modal-photos"></div>
-    <button class="delete-btn" onclick="confirmDelete()">この報告を削除する</button>
+    <button class="delete-btn" id="modal-delete-btn" onclick="confirmDelete()">この報告を削除する</button>
   </div>
 </div>
 
@@ -371,13 +374,39 @@ window._auth=auth; window._db=db; window._dbRef=ref;
 window._push=push; window._get=get; window._remove=remove;
 window._signIn=signInWithEmailAndPassword; window._signOut=signOut;
 
+// 会社・権限設定
+const ADMIN_EMAIL = 'kitaguchi@sakaiss.com';
+const COMPANY_MAP = {
+  'kitaguchi@sakaiss.com': 'sakai',
+  'shingaki@sakaiss.com':  'toriez',
+};
+
 onAuthStateChanged(auth, user => {
   if (user) {
+    window._currentUser    = user;
+    window._currentEmail   = user.email;
+    window._currentCompany = COMPANY_MAP[user.email] || user.email;
+    window._isAdmin        = user.email === ADMIN_EMAIL;
+
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'flex';
-    autoCleanOldPhotos(); // 3日以上前の写真を自動削除
+
+    // エクスポートタブは管理者のみ表示
+    document.getElementById('tab-export').style.display = window._isAdmin ? '' : 'none';
+
+    // ヘッダーにユーザー情報表示
+    const userEl = document.getElementById('header-user');
+    if (userEl) {
+      userEl.textContent = window._isAdmin ? '管理者' : (COMPANY_MAP[user.email] === 'toriez' ? 'トリエズ' : user.email);
+    }
+
+    autoCleanOldPhotos();
     loadHistory();
   } else {
+    window._currentUser    = null;
+    window._currentEmail   = null;
+    window._currentCompany = null;
+    window._isAdmin        = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-app').style.display = 'none';
   }
@@ -698,6 +727,7 @@ async function execSubmit() {
       kanri, tanto, damage,
       kumen: master[2]||'', shubetsu: master[1]||'', zumen: master[0]||'',
       datetime: toJSTISOString(now),
+      company: window._currentCompany || 'unknown',
       photoKeys
     });
 
@@ -743,7 +773,10 @@ async function loadHistory() {
     if (repSnap.exists()) {
       repSnap.forEach(item => {
         const r = { id: item.key, ...item.val() };
-        historyData.push(r);
+        // 管理者は全件・一般ユーザーは自社分のみ
+        if (window._isAdmin || r.company === window._currentCompany) {
+          historyData.push(r);
+        }
       });
       historyData.reverse();
     }
@@ -816,7 +849,12 @@ async function showDetail(id) {
     <div class="detail-row"><span class="key">損傷種類</span><span class="val">${r.damage||'-'}</span></div>
     <div class="detail-row"><span class="key">区名</span><span class="val">${r.kumen||'-'}</span></div>
     <div class="detail-row"><span class="key">種別</span><span class="val">${r.shubetsu||'-'}</span></div>
-    <div class="detail-row"><span class="key">図面番号</span><span class="val">${r.zumen||'-'}</span></div>`;
+    <div class="detail-row"><span class="key">図面番号</span><span class="val">${r.zumen||'-'}</span></div>
+    ${window._isAdmin ? `<div class="detail-row"><span class="key">会社</span><span class="val">${r.company||'-'}</span></div>` : ''}`;
+
+  // 削除ボタン：自社分のみ表示（管理者は全件）
+  const canDelete = window._isAdmin || r.company === window._currentCompany;
+  document.getElementById('modal-delete-btn').style.display = canDelete ? '' : 'none';
 
   // モーダルを先に開いてローディング表示
   document.getElementById('modal-photos').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text3);font-size:13px;"><span class="spinner" style="border-top-color:var(--accent);"></span> 写真を読み込み中...</div>';
@@ -865,6 +903,12 @@ function closeConfirm() { document.getElementById('confirm-overlay').classList.r
 async function execDelete() {
   if (!deleteTargetId) return;
   const r = historyData.find(x => x.id===deleteTargetId);
+  // 権限チェック：自社分のみ削除可能
+  if (!window._isAdmin && r?.company !== window._currentCompany) {
+    showToast('この報告を削除する権限がありません', 'error');
+    closeConfirm();
+    return;
+  }
   closeConfirm(); closeModalDirect();
   try {
     if (r?.photoKeys) {
@@ -915,6 +959,10 @@ function initExportDate() {
 let exportRecords = [];
 
 async function onExportDateChange() {
+  if (!window._isAdmin) {
+    showToast('エクスポートは管理者のみ使用できます', 'error');
+    return;
+  }
   const dateVal = document.getElementById('export-date').value;
   if (!dateVal) return;
 
