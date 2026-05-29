@@ -1256,8 +1256,9 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
           const fixedW_h = Math.round(7.78 * 28.35); // 221pt
           const fixedH_h = Math.round(5.89 * 28.35); // 167pt
           const offsetRows_h = 50 / 18.8;
+          const offsetCols_h = 1 / (3.5 * 7.5);
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col, row: tl_row + offsetRows_h },
+            tl: { col: photoCols[pi].tl_col + offsetCols_h, row: tl_row + offsetRows_h },
             ext: { width: fixedW_h, height: fixedH_h },
             editAs: 'oneCell'
           });
