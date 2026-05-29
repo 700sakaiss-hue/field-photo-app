@@ -1252,15 +1252,11 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
             editAs: 'oneCell'
           });
         } else {
-          // 横向き写真 → 固定サイズ（幅7.78cm × 高さ5.89cm）・上下左右中央寄せ
+          // 横向き写真 → 固定サイズ（幅7.78cm × 高さ5.89cm）・左上基準
           const fixedW_h = Math.round(7.78 * 28.35); // 221pt
           const fixedH_h = Math.round(5.89 * 28.35); // 167pt
-          const offsetHpt_h  = (cellHpt - fixedH_h) / 2 + 5;  // 5pt下げ
-          const offsetRows_h = Math.max(0, offsetHpt_h / 18.8);
-          const offsetWpt_h  = (cellWpt - fixedW_h) / 2;
-          const offsetCols_h = Math.max(0, offsetWpt_h / (3.5 * 7.5));
           newSheet.addImage(imageId, {
-            tl: { col: photoCols[pi].tl_col + offsetCols_h, row: tl_row + offsetRows_h },
+            tl: { col: photoCols[pi].tl_col, row: tl_row },
             ext: { width: fixedW_h, height: fixedH_h },
             editAs: 'oneCell'
           });
