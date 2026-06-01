@@ -389,6 +389,7 @@ const COMPANY_NAMES = {
 function getCompanyName(companyId) {
   return COMPANY_NAMES[companyId] || companyId || '-';
 }
+window.getCompanyName = getCompanyName;
 
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -859,7 +860,7 @@ async function showDetail(id) {
     <div class="detail-row"><span class="key">区名</span><span class="val">${r.kumen||'-'}</span></div>
     <div class="detail-row"><span class="key">種別</span><span class="val">${r.shubetsu||'-'}</span></div>
     <div class="detail-row"><span class="key">図面番号</span><span class="val">${r.zumen||'-'}</span></div>
-    ${window._isAdmin ? `<div class="detail-row"><span class="key">会社</span><span class="val">${getCompanyName(r.company)}</span></div>` : ''}`;
+    ${window._isAdmin ? `<div class="detail-row"><span class="key">会社</span><span class="val">${window.getCompanyName(r.company)}</span></div>` : ''}`;
 
   // 削除ボタン：自社分のみ表示（管理者は全件）
   const canDelete = window._isAdmin || r.company === window._currentCompany;
