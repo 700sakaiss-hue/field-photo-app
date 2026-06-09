@@ -289,9 +289,9 @@
   <!-- エクスポートタブ -->
   <div class="tab-content" id="pane-export">
   <div class="tab-inner">
-    <div class="section">
+    <div class="section" style="overflow:hidden;">
       <div class="section-label">エクスポート日付</div>
-      <input type="date" class="form-input" id="export-date" onchange="onExportDateChange()" style="width:100%;max-width:100%;">
+      <input type="date" class="form-input" id="export-date" onchange="onExportDateChange()" style="width:calc(100% - 2px);max-width:calc(100% - 2px);">
     </div>
     <div class="section" id="export-preview-section" style="display:none;">
       <div class="section-label">対象件数</div>
