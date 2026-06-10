@@ -17,6 +17,8 @@
   :root{--bg:#B7CDE3;--glass:rgba(255,255,255,0.52);--glass-border:rgba(255,255,255,0.7);--glass-input:rgba(255,255,255,0.65);--surface:#ffffff;--surface2:#e8eef5;--input:#f0f4f8;--border:#cbd5e1;--accent:#00489d;--accent2:#00489d;--green:#16a34a;--red:#dc2626;--amber:#dc2626;--text:#1e293b;--text3:#64748b;--mono:'Noto Sans Mono','JetBrains Mono',monospace;}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   body{font-family:'Noto Sans JP',sans-serif;background:var(--bg) url('bg-blue.jpg') center center / cover fixed;color:var(--text);min-height:100dvh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:rgba(255,255,255,0.5);z-index:0;pointer-events:none;}
+#login-screen,#main-app{position:relative;z-index:1;}
 
   #login-screen{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
   .login-logo{font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:var(--accent);font-weight:500;margin-bottom:2rem;}
