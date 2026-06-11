@@ -333,6 +333,21 @@ body::before{content:'';position:fixed;inset:0;background:rgba(255,255,255,0.5);
   </div>
 </div>
 
+<!-- 詳2種別確認ダイアログ -->
+<!-- 詳2種別確認ダイアログ -->
+<div class="confirm-overlay" id="shubetsu-confirm-overlay">
+  <div class="confirm-box">
+    <div style="font-size:28px;margin-bottom:8px;">📋</div>
+    <div class="confirm-title" style="color:var(--accent);">点検種別を選択してください</div>
+    <div class="confirm-sub">種別「詳2」で登録します。<br>点検の種類を選択してください。</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+      <button class="confirm-ok" style="background:var(--accent);" onclick="selectShubetsu('詳2(通常点検)')">通常点検</button>
+      <button class="confirm-ok" style="background:var(--green);" onclick="selectShubetsu('詳2(キズミー)')">キズミー</button>
+      <button class="confirm-cancel" onclick="closeShubetsuConfirm()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
 <!-- 重複確認ダイアログ -->
 <div class="confirm-overlay" id="dup-confirm-overlay">
   <div class="confirm-box">
@@ -342,6 +357,9 @@ body::before{content:'';position:fixed;inset:0;background:rgba(255,255,255,0.5);
     <div class="confirm-btns">
       <button class="confirm-cancel" onclick="closeDupConfirm()">戻る</button>
       <button class="confirm-ok" style="background:var(--red);" onclick="submitForce()">このまま登録する</button>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 </div>
@@ -703,7 +721,26 @@ async function doSubmit() {
     return;
   }
 
+  // 種別「詳2」の場合は通常点検/キズミーを確認
+  const shubetsu = masterData[kanri]?.[1] || '';
+  if (shubetsu === '詳2' && !window._shubetsuOverride) {
+    document.getElementById('shubetsu-confirm-overlay').classList.add('open');
+    return;
+  }
+
   await execSubmit();
+}
+
+function closeShubetsuConfirm() {
+  document.getElementById('shubetsu-confirm-overlay').classList.remove('open');
+}
+
+async function selectShubetsu(shubetsuValue) {
+  closeShubetsuConfirm();
+  // 種別を上書きして登録
+  window._shubetsuOverride = shubetsuValue;
+  await execSubmit();
+  window._shubetsuOverride = null;
 }
 
 function closeDupConfirm() {
@@ -743,7 +780,9 @@ async function execSubmit() {
 
     await window._push(window._dbRef(window._db, 'reports'), {
       kanri, tanto, damage,
-      kumen: master[2]||'', shubetsu: master[1]||'', zumen: master[0]||'',
+      kumen: master[2]||'',
+      shubetsu: window._shubetsuOverride || master[1]||'',
+      zumen: master[0]||'',
       datetime: toJSTISOString(now),
       company: window._currentCompany || 'unknown',
       photoKeys
@@ -957,6 +996,7 @@ window.showDetail=showDetail; window.closeModal=closeModal; window.closeModalDir
 window.confirmDelete=confirmDelete; window.closeConfirm=closeConfirm; window.execDelete=execDelete;
 window.onTestDateChange=onTestDateChange;
 window.closeDupConfirm=closeDupConfirm; window.submitForce=submitForce;
+window.closeShubetsuConfirm=closeShubetsuConfirm; window.selectShubetsu=selectShubetsu;
 </script>
 
 <script>
@@ -1185,7 +1225,7 @@ async function generateExcelExcelJS(records, dateVal, sheetName) {
     sheet.getRow(startRow).getCell(cDate).numFmt = 'yyyy/m/d';
     sheet.getRow(startRow).getCell(cTanto).value = rec.tanto || '';
     sheet.getRow(startRow + 1).getCell(cKumen).value = rec.kumen || '';
-    sheet.getRow(startRow + 1).getCell(cShubetsu).value = rec.shubetsu || '';
+    sheet.getRow(startRow + 1).getCell(cShubetsu).value = (rec.shubetsu || '').replace('詳2(通常点検)', '詳2').replace('詳2(キズミー)', '詳2');
     sheet.getRow(startRow + 1).getCell(cKanri).value = rec.kanri || '';
     sheet.getRow(startRow + 1).getCell(cZumen).value = rec.zumen || '';
     sheet.getRow(startRow + 14).getCell(cDamage).value = rec.damage || '';
