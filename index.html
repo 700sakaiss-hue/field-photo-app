@@ -879,7 +879,7 @@ function renderHistory(data) {
     return `<div class="report-card" onclick="showDetail('${r.id}')">
       <div class="card-header">
         <div>
-          <div class="card-kanri">${r.kanri||'-'} <span style="font-size:11px;font-weight:400;color:var(--accent);font-family:'Noto Sans JP',sans-serif;">${r.shubetsu ? `[${r.shubetsu}]` : ''}</span></div>
+          <div class="card-kanri">${r.kanri||'-'} <span style="font-size:11px;font-weight:400;color:var(--accent);">${r.shubetsu ? `[${r.shubetsu}]` : ''}</span></div>
           <div class="card-meta">${r.tanto||'-'}　${r.damage||'-'}</div>
         </div>
         <div>
