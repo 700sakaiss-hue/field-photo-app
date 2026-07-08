@@ -439,6 +439,7 @@ onAuthStateChanged(auth, user => {
 
     autoCleanOldPhotos();
     loadHistory();
+    applyUrlParams();
   } else {
     window._currentUser    = null;
     window._currentEmail   = null;
@@ -820,7 +821,19 @@ function resetForm() {
   extraPhotos = [];
   renderSlots(); renderExtra(); updateBtn();
 }
-
+// URLパラメータから管理番号・担当者名を自動入力
+function applyUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const kanri = params.get('kanri');
+  const inspector = params.get('inspector');
+  if (kanri) {
+    document.getElementById('kanri-input').value = kanri;
+    onKanriInput(); // 重複チェックを発火
+  }
+  if (inspector) {
+    document.getElementById('tanto-input').value = inspector;
+  }
+}
 // 履歴（写真データは取得しない）
 async function loadHistory() {
   const list = document.getElementById('history-list');
